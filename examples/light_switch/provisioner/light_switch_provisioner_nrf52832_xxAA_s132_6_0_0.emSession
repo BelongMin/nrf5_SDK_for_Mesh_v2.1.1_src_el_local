@@ -23,7 +23,9 @@
  <Project>
   <ProjectSessionItem path="light_switch_provisioner_nrf52832_xxAA_s132_6.0.0"/>
   <ProjectSessionItem path="light_switch_provisioner_nrf52832_xxAA_s132_6.0.0;light_switch_provisioner_nrf52832_xxAA_s132_6.0.0"/>
+  <ProjectSessionItem path="light_switch_provisioner_nrf52832_xxAA_s132_6.0.0;light_switch_provisioner_nrf52832_xxAA_s132_6.0.0;Access"/>
   <ProjectSessionItem path="light_switch_provisioner_nrf52832_xxAA_s132_6.0.0;light_switch_provisioner_nrf52832_xxAA_s132_6.0.0;Application"/>
+  <ProjectSessionItem path="light_switch_provisioner_nrf52832_xxAA_s132_6.0.0;light_switch_provisioner_nrf52832_xxAA_s132_6.0.0;Configuration Model"/>
   <ProjectSessionItem path="light_switch_provisioner_nrf52832_xxAA_s132_6.0.0;light_switch_provisioner_nrf52832_xxAA_s132_6.0.0;Provisioning"/>
  </Project>
  <Register1>
@@ -57,15 +59,21 @@
   <Watches active="0" update="Never"/>
  </Watch4>
  <Files>
-  <SessionOpenFile windowGroup="DockEditLeft" x="41" y="442" useTextEdit="1" useBinaryEdit="0" left="0" path="src/main.c" selected="0" top="451" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="98" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../mesh/core/api/nrf_mesh_assert.h" selected="0" top="58" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="49" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../nRF5_SDK_15.0.0_a53641a/components/toolchain/cmsis/include/cmsis_gcc.h" selected="0" top="37" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="93" useTextEdit="1" useBinaryEdit="0" left="0" path="../../common/src/simple_hal.c" selected="0" top="71" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="113" useTextEdit="1" useBinaryEdit="0" left="0" path="src/provisioner_helper.c" selected="0" top="90" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="95" useTextEdit="1" useBinaryEdit="0" left="0" path="include/provisioner_helper.h" selected="0" top="72" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="212" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../mesh/prov/src/nrf_mesh_prov.c" selected="0" top="173" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="455" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../mesh/prov/src/prov_provisioner.c" selected="0" top="432" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="322" useTextEdit="1" useBinaryEdit="0" left="0" path="src/node_setup.c" selected="1" top="303" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="12" y="615" useTextEdit="1" useBinaryEdit="0" left="0" path="src/main.c" selected="0" top="587" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="190" useTextEdit="1" useBinaryEdit="0" left="0" path="src/provisioner_helper.c" selected="0" top="161" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="269" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../mesh/prov/src/nrf_mesh_prov.c" selected="0" top="254" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="456" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../mesh/prov/src/prov_provisioner.c" selected="0" top="438" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="82" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../mesh/prov/api/nrf_mesh_prov_events.h" selected="0" top="67" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="307" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../mesh/prov/api/nrf_mesh_prov_types.h" selected="0" top="285" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="217" useTextEdit="1" useBinaryEdit="0" left="0" path="../../common/src/simple_hal.c" selected="0" top="194" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="545" useTextEdit="1" useBinaryEdit="0" left="0" path="src/node_setup.c" selected="1" top="502" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="420" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../models/config/include/config_client.h" selected="0" top="402" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="189" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../models/config/include/config_messages.h" selected="0" top="162" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="2454" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../models/config/src/config_server.c" selected="0" top="2438" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="50" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../mesh/access/api/access_status.h" selected="0" top="36" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="352" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../models/config/src/config_client.c" selected="0" top="335" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="54" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../models/simple_on_off/include/simple_on_off_client.h" selected="0" top="32" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="75" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../mesh/access/api/access.h" selected="0" top="53" codecName="Default"/>
  </Files>
- <ARMCrossStudioWindow activeProject="light_switch_provisioner_nrf52832_xxAA_s132_6.0.0" fileDialogDefaultFilter="*.c" autoConnectTarget="J-Link" buildConfiguration="Debug" debugSearchFileMap="" fileDialogInitialDirectory="" debugSearchPath="" autoConnectCapabilities="3199"/>
+ <ARMCrossStudioWindow activeProject="light_switch_provisioner_nrf52832_xxAA_s132_6.0.0" fileDialogDefaultFilter="*.c" autoConnectTarget="J-Link" buildConfiguration="Debug" debugSearchFileMap="" fileDialogInitialDirectory="E:/Nordic/nrf5_SDK_for_Mesh_v2.1.1_src_el_local/mesh/access/api" debugSearchPath="" autoConnectCapabilities="3711"/>
 </session>

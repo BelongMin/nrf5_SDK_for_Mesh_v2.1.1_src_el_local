@@ -90,7 +90,9 @@ typedef void (*prov_helper_success_cb_t)(void);
 typedef struct
 {
     /** Expected UUID byte array filter */
-    const uint8_t * p_uuid;
+//    const uint8_t * p_uuid;
+    const uint8_t * p_uuid_0;
+    const uint8_t * p_uuid_1;
     /** Length of the `p_uuid` filter array */
     uint32_t length;
 } prov_helper_uuid_filter_t;

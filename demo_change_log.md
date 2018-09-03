@@ -70,4 +70,15 @@ $(SDK_ROOT:../../../../nRF5_SDK_15.0.0_a53641a)/components/libraries/experimenta
 
 ### 20180730
 #### 处理 light_switch_proxy_client 工程代码
-1. 
+1. 更改simple_on_off_opcode_t和SIMPLE_ON_OFF_COMPANY_ID
+``` C
+#define SIMPLE_ON_OFF_COMPANY_ID    (ACCESS_COMPANY_ID_NONE)
+
+typedef enum
+{
+    SIMPLE_ON_OFF_OPCODE_SET = 0x8202,            /**< Generic OnOff Set. */
+    SIMPLE_ON_OFF_OPCODE_GET = 0x8201,            /**< Generic OnOff Get. */
+    SIMPLE_ON_OFF_OPCODE_SET_UNRELIABLE = 0x8203, /**< Generic OnOff Set Unreliable. */
+    SIMPLE_ON_OFF_OPCODE_STATUS = 0x8204          /**< Generic OnOff Status. */
+} simple_on_off_opcode_t;
+```

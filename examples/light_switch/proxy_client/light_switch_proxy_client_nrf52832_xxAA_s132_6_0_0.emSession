@@ -59,22 +59,10 @@
   <Watches active="0" update="Never"/>
  </Watch4>
  <Files>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="420" useTextEdit="1" useBinaryEdit="0" left="0" path="src/main.c" selected="1" top="266" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="197" useTextEdit="1" useBinaryEdit="0" left="0" path="../../common/src/simple_hal.c" selected="0" top="179" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="64" useTextEdit="1" useBinaryEdit="0" left="0" path="../../common/include/simple_hal.h" selected="0" top="41" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="54" useTextEdit="1" useBinaryEdit="0" left="0" path="../../common/include/nrf_mesh_config_examples.h" selected="0" top="31" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="225" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../nRF5_SDK_15.0.0_a53641a/components/softdevice/common/nrf_sdh.c" selected="0" top="194" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="9032" useTextEdit="1" useBinaryEdit="0" left="0" path="include/sdk_config.h" selected="0" top="8994" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="155" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../models/simple_brightness/src/el_simple_brightness_client.c" selected="0" top="143" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="1007" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../mesh/access/src/access.c" selected="0" top="976" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="103" useTextEdit="1" useBinaryEdit="0" left="0" path="include/nrf_mesh_config_app.h" selected="0" top="88" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="58" useTextEdit="1" useBinaryEdit="0" left="0" path="../include/light_switch_example_common.h" selected="0" top="43" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="15" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../models/simple_brightness/include/el_simple_brightness_client.h" selected="0" top="9" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="27" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../models/simple_brightness/include/el_simple_brightness_common.h" selected="0" top="6" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="180" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../models/simple_on_off/src/simple_on_off_client.c" selected="0" top="8" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="42" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../models/simple_on_off/include/simple_on_off_client.h" selected="0" top="39" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="76" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../models/simple_on_off/include/simple_on_off_common.h" selected="0" top="54" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="73" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../mesh/access/api/access.h" selected="0" top="54" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="30" y="370" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../nrf5_SDK_for_Mesh_v2.1.1_src_el/examples/light_switch/proxy_client/src/main.c" selected="0" top="368" codecName=""/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="67" useTextEdit="1" useBinaryEdit="0" left="0" path="../include/light_switch_example_common.h" selected="0" top="41" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="176" useTextEdit="1" useBinaryEdit="0" left="0" path="../../common/src/mesh_provisionee.c" selected="0" top="160" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="309" useTextEdit="1" useBinaryEdit="0" left="0" path="src/main.c" selected="1" top="288" codecName="Default"/>
  </Files>
- <ARMCrossStudioWindow activeProject="light_switch_proxy_client_nrf52832_xxAA_s132_6.0.0" fileDialogDefaultFilter="*.c" autoConnectTarget="J-Link" buildConfiguration="Debug" debugSearchFileMap="" fileDialogInitialDirectory="E:/Nordic/nrf5_SDK_for_Mesh_v2.1.1_src_el/models/simple_brightness/src" debugSearchPath="" autoConnectCapabilities="3199"/>
+ <ARMCrossStudioWindow activeProject="light_switch_proxy_client_nrf52832_xxAA_s132_6.0.0" fileDialogDefaultFilter="*.c" autoConnectTarget="J-Link" buildConfiguration="Debug" debugSearchFileMap="" fileDialogInitialDirectory="E:/Nordic/nrf5_SDK_for_Mesh_v2.1.1_src_el/models/simple_brightness/src" debugSearchPath="" autoConnectCapabilities="3711"/>
 </session>

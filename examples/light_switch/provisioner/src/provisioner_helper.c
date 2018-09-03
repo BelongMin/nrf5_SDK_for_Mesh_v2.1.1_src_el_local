@@ -81,7 +81,7 @@ static void prov_evt_handler(const nrf_mesh_prov_evt_t * p_evt);
 will always return true */
 static bool uuid_filter_compare(const uint8_t *p_in_uuid)
 {
-    if (mp_expected_uuid->p_uuid == NULL || mp_expected_uuid->length == 0)
+    if (mp_expected_uuid->p_uuid_0 == NULL || mp_expected_uuid->p_uuid_1 == NULL || mp_expected_uuid->length == 0)
     {
         __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Any UUID accepted\n");
         return true;
@@ -90,7 +90,12 @@ static bool uuid_filter_compare(const uint8_t *p_in_uuid)
 
     for (uint8_t i = 0; i <= (NRF_MESH_UUID_SIZE - mp_expected_uuid->length); i++)
     {
-        if (memcmp(&p_in_uuid[i], mp_expected_uuid->p_uuid, mp_expected_uuid->length) == 0)
+        if (memcmp(&p_in_uuid[i], mp_expected_uuid->p_uuid_0, mp_expected_uuid->length) == 0)
+        {
+            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "UUID filter matched\n");
+            return true;
+        }
+        else if (memcmp(&p_in_uuid[i], mp_expected_uuid->p_uuid_1, mp_expected_uuid->length) == 0)
         {
             __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "UUID filter matched\n");
             return true;
@@ -134,7 +139,7 @@ static void prov_evt_handler(const nrf_mesh_prov_evt_t * p_evt)
 {
     static dsm_handle_t addr_handle;
     static dsm_handle_t devkey_handle;
-
+    static uint8_t dev_uuid_prov[NRF_MESH_UUID_SIZE];
     switch (p_evt->type)
     {
         case NRF_MESH_PROV_EVT_UNPROVISIONED_RECEIVED:
@@ -146,6 +151,9 @@ static void prov_evt_handler(const nrf_mesh_prov_evt_t * p_evt)
                 {
                     break;
                 }
+                __LOG_XB(LOG_SRC_APP, LOG_LEVEL_INFO, "unprov.device_uuid UUID", p_evt->params.unprov.device_uuid, NRF_MESH_UUID_SIZE);
+                memcpy(dev_uuid_prov, p_evt->params.unprov.device_uuid, NRF_MESH_UUID_SIZE);
+                __LOG_XB(LOG_SRC_APP, LOG_LEVEL_INFO, "dev_uuid_prov UUID", dev_uuid_prov, NRF_MESH_UUID_SIZE);
                 start_provisioning(p_evt->params.unprov.device_uuid);
                 m_prov_state = PROV_STATE_PROV;
             }
@@ -179,9 +187,9 @@ static void prov_evt_handler(const nrf_mesh_prov_evt_t * p_evt)
 
                 __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Provisioning complete. Node addr: 0x%04x elements: %d\n",
                       m_provisioner.p_nw_data->last_device_address, m_target_elements);
-
+                __LOG_XB(LOG_SRC_APP, LOG_LEVEL_INFO, "Provisioning complete UUID", dev_uuid_prov, NRF_MESH_UUID_SIZE);
                 node_setup_start(m_provisioner.p_nw_data->last_device_address, PROVISIONER_RETRY_COUNT,
-                m_provisioner.p_nw_data->appkey, APPKEY_INDEX);
+                m_provisioner.p_nw_data->appkey, APPKEY_INDEX, dev_uuid_prov);
                 m_prov_state = PROV_STATE_IDLE;
 
             }
@@ -206,7 +214,7 @@ static void prov_evt_handler(const nrf_mesh_prov_evt_t * p_evt)
             ERROR_CHECK(config_client_server_bind(devkey_handle));
             ERROR_CHECK(config_client_server_set(devkey_handle,
                                                 addr_handle));
-
+            __LOG_XB(LOG_SRC_APP, LOG_LEVEL_INFO, "Provisioning completed received UUID", p_evt->params.unprov.device_uuid, NRF_MESH_UUID_SIZE);
             __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Addr: 0x%04x addr_handle: %d netkey_handle: %d devkey_handle: %d\n",
                   p_evt->params.complete.p_prov_data->address,
                   addr_handle,
@@ -243,7 +251,7 @@ static void prov_evt_handler(const nrf_mesh_prov_evt_t * p_evt)
                     m_provisioner.p_prov_failed_cb();
                 }
             }
-
+            __LOG_XB(LOG_SRC_APP, LOG_LEVEL_INFO, "Provisioning OOB UUID", p_evt->params.unprov.device_uuid, NRF_MESH_UUID_SIZE);
             break;
         }
 
@@ -252,11 +260,13 @@ static void prov_evt_handler(const nrf_mesh_prov_evt_t * p_evt)
             const uint8_t static_data[NRF_MESH_KEY_SIZE] = STATIC_AUTH_DATA;
             ERROR_CHECK(nrf_mesh_prov_auth_data_provide(p_evt->params.static_request.p_context, static_data, NRF_MESH_KEY_SIZE));
             __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Static authentication data provided\n");
+            __LOG_XB(LOG_SRC_APP, LOG_LEVEL_INFO, "Static authentication data provided UUID", p_evt->params.unprov.device_uuid, NRF_MESH_UUID_SIZE);
             break;
         }
 
         case NRF_MESH_PROV_EVT_LINK_ESTABLISHED:
             __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Provisioning link established\n");
+            __LOG_XB(LOG_SRC_APP, LOG_LEVEL_INFO, "Provisioning link established UUID", p_evt->params.unprov.device_uuid, NRF_MESH_UUID_SIZE);
             break;
 
         default:

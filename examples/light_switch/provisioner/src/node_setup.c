@@ -655,7 +655,7 @@ void node_setup_config_client_event_process(config_client_event_type_t event_typ
  * Begins the node setup process.
  */
 void node_setup_start(uint16_t address, uint8_t  retry_cnt, const uint8_t * p_appkey,
-                      uint16_t appkey_idx)
+                      uint16_t appkey_idx, const uint8_t *p_in_uuid)
 {
     if (*mp_config_step != NODE_SETUP_IDLE)
     {
@@ -671,8 +671,21 @@ void node_setup_start(uint16_t address, uint8_t  retry_cnt, const uint8_t * p_ap
 
     __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Configuring Node: 0x%04X\n", m_current_node_addr);
 
-    setup_config_client(m_current_node_addr);
-    setup_select_steps(m_current_node_addr);
+     setup_config_client(m_current_node_addr);
+//    setup_select_steps(m_current_node_addr);
+    const uint8_t m_client_uuid_filter[SERVER_NODE_UUID_PREFIX_SIZE] = CLIENT_NODE_UUID_PREFIX;
+    const uint8_t m_server_uuid_filter[SERVER_NODE_UUID_PREFIX_SIZE] = SERVER_NODE_UUID_PREFIX;
+//    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "p_in_uuid %x %x %x %x\n", p_in_uuid[0], p_in_uuid[1], p_in_uuid[2], p_in_uuid[3]);
+    if (memcmp(&p_in_uuid[0], m_client_uuid_filter, SERVER_NODE_UUID_PREFIX_SIZE) == 0)
+    {
+        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "CLIENT_NODE_UUID_PREFIX\n");
+        mp_config_step = client_config_steps;
+    }
+    else if (memcmp(&p_in_uuid[0], m_server_uuid_filter, SERVER_NODE_UUID_PREFIX_SIZE) == 0)
+    {
+        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "SERVER_NODE_UUID_PREFIX\n");
+        mp_config_step = server1_server2_config_steps;
+    }
     config_step_execute();
 }
 

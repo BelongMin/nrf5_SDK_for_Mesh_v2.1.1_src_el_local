@@ -85,7 +85,7 @@ typedef void (*node_setup_failed_cb_t)(void);
  * @param[in]  appkey_idx   Desired appkey index.
  */
 void node_setup_start(uint16_t address, uint8_t  retry_cnt, const uint8_t * p_appkey,
-                      uint16_t appkey_idx);
+                      uint16_t appkey_idx, const uint8_t *p_in_uuid);
 
 /**
  * Sets the application callbacks to be called when node setup succeeds or fails.

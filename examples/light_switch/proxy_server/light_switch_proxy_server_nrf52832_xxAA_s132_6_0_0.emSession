@@ -60,7 +60,7 @@
   <Watches active="0" update="Never"/>
  </Watch4>
  <Files>
-  <SessionOpenFile windowGroup="DockEditLeft" x="33" y="186" useTextEdit="1" useBinaryEdit="0" left="0" path="src/main.c" selected="1" top="150" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="27" y="252" useTextEdit="1" useBinaryEdit="0" left="0" path="src/main.c" selected="0" top="218" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="93" useTextEdit="1" useBinaryEdit="0" left="0" path="../../common/src/simple_hal.c" selected="0" top="75" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="247" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../nRF5_SDK_15.0.0_a53641a/components/boards/boards.h" selected="0" top="229" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="71" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../nRF5_SDK_15.0.0_a53641a/components/boards/ptr5618.h" selected="0" top="57" codecName="Default"/>
@@ -80,6 +80,7 @@
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="1016" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../mesh/access/src/access.c" selected="0" top="987" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="68" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../nRF5_SDK_15.0.0_a53641a/components/softdevice/s132/headers/nrf_error.h" selected="0" top="49" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="75" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../mesh/access/api/access.h" selected="0" top="56" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="57" useTextEdit="1" useBinaryEdit="0" left="0" path="../../common/src/mesh_app_utils.c" selected="1" top="27" codecName="Default"/>
  </Files>
  <ARMCrossStudioWindow activeProject="light_switch_proxy_server_nrf52832_xxAA_s132_6.0.0" fileDialogDefaultFilter="*.c" autoConnectTarget="J-Link" buildConfiguration="Debug" debugSearchFileMap="" fileDialogInitialDirectory="E:/Nordic/nRF5_SDK_15.0.0_a53641a/modules/nrfx/drivers/src" debugSearchPath="" autoConnectCapabilities="3199"/>
 </session>

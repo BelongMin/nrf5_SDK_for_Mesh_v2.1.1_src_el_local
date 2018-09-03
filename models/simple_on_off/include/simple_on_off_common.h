@@ -74,24 +74,25 @@
 /*lint -align_max(push) -align_max(1) */
 
 /** Vendor specific company ID for Simple OnOff model */
-#define SIMPLE_ON_OFF_COMPANY_ID    (ACCESS_COMPANY_ID_NONE)
+//#define SIMPLE_ON_OFF_COMPANY_ID    (ACCESS_COMPANY_ID_NONE)
+#define SIMPLE_ON_OFF_COMPANY_ID    (ACCESS_COMPANY_ID_NORDIC)
 
 /** Simple OnOff opcodes. */
-//typedef enum
-//{
-//    SIMPLE_ON_OFF_OPCODE_SET = 0xC1,            /**< Simple OnOff Acknowledged Set. */
-//    SIMPLE_ON_OFF_OPCODE_GET = 0xC2,            /**< Simple OnOff Get. */
-//    SIMPLE_ON_OFF_OPCODE_SET_UNRELIABLE = 0xC3, /**< Simple OnOff Set Unreliable. */
-//    SIMPLE_ON_OFF_OPCODE_STATUS = 0xC4          /**< Simple OnOff Status. */
-//} simple_on_off_opcode_t;
-
 typedef enum
 {
-    SIMPLE_ON_OFF_OPCODE_SET = 0x8202,            /**< Generic OnOff Set. */
-    SIMPLE_ON_OFF_OPCODE_GET = 0x8201,            /**< Generic OnOff Get. */
-    SIMPLE_ON_OFF_OPCODE_SET_UNRELIABLE = 0x8203, /**< Generic OnOff Set Unreliable. */
-    SIMPLE_ON_OFF_OPCODE_STATUS = 0x8204          /**< Generic OnOff Status. */
+    SIMPLE_ON_OFF_OPCODE_SET = 0xC1,            /**< Simple OnOff Acknowledged Set. */
+    SIMPLE_ON_OFF_OPCODE_GET = 0xC2,            /**< Simple OnOff Get. */
+    SIMPLE_ON_OFF_OPCODE_SET_UNRELIABLE = 0xC3, /**< Simple OnOff Set Unreliable. */
+    SIMPLE_ON_OFF_OPCODE_STATUS = 0xC4          /**< Simple OnOff Status. */
 } simple_on_off_opcode_t;
+
+//typedef enum
+//{
+//    SIMPLE_ON_OFF_OPCODE_SET = 0x8202,            /**< Generic OnOff Set. */
+//    SIMPLE_ON_OFF_OPCODE_GET = 0x8201,            /**< Generic OnOff Get. */
+//    SIMPLE_ON_OFF_OPCODE_SET_UNRELIABLE = 0x8203, /**< Generic OnOff Set Unreliable. */
+//    SIMPLE_ON_OFF_OPCODE_STATUS = 0x8204          /**< Generic OnOff Status. */
+//} simple_on_off_opcode_t;
 
 /** Message format for the Simple OnOff Set message. */
 typedef struct __attribute((packed))

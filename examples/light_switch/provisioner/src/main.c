@@ -91,6 +91,7 @@ static network_dsm_handles_data_volatile_t m_dev_handles;
 static network_stats_data_stored_t m_nw_state;
 
 static const uint8_t m_client_node_uuid[NRF_MESH_UUID_SIZE] = CLIENT_NODE_UUID;
+static const uint8_t m_client_uuid_filter[SERVER_NODE_UUID_PREFIX_SIZE] = CLIENT_NODE_UUID_PREFIX;
 static const uint8_t m_server_uuid_filter[SERVER_NODE_UUID_PREFIX_SIZE] = SERVER_NODE_UUID_PREFIX;
 static prov_helper_uuid_filter_t m_exp_uuid;
 static bool m_node_prov_setup_started;
@@ -253,7 +254,7 @@ static void app_config_successful_cb(void)
     m_nw_state.configured_devices++;
     access_flash_config_store();
     ERROR_CHECK(store_app_data());
-
+/*
     if (m_nw_state.configured_devices < (SERVER_NODE_COUNT + CLIENT_NODE_COUNT))
     {
         m_exp_uuid.p_uuid = m_server_uuid_filter;
@@ -269,6 +270,7 @@ static void app_config_successful_cb(void)
 
         hal_led_blink_ms(LEDS_MASK, LED_BLINK_INTERVAL_MS, LED_BLINK_CNT_PROV);
     }
+*/
 }
 
 static void app_config_failed_cb(void)
@@ -350,37 +352,49 @@ static void check_network_state(void)
             /* Execute configuration */
             __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Waiting for provisioned node to be configured ...\n");
             node_setup_start(m_nw_state.last_device_address, PROVISIONER_RETRY_COUNT,
-                            m_nw_state.appkey, APPKEY_INDEX);
+                            m_nw_state.appkey, APPKEY_INDEX, m_exp_uuid.p_uuid_0);
 
             hal_led_pin_set(APP_CONFIGURATION_LED, 1);
         }
-        else if (m_nw_state.provisioned_devices == 0)
+        else 
         {
             /* Start provisioning - First provision the client with known UUID */
-            m_exp_uuid.p_uuid = m_client_node_uuid;
-            m_exp_uuid.length = NRF_MESH_UUID_SIZE;
+            m_exp_uuid.p_uuid_0 = m_client_uuid_filter;
+            m_exp_uuid.p_uuid_1 = m_server_uuid_filter;
+            m_exp_uuid.length = SERVER_NODE_UUID_PREFIX_SIZE;
             __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Waiting for Client node to be provisioned ...\n");
             prov_helper_provision_next_device(PROVISIONER_RETRY_COUNT, m_nw_state.next_device_address, &m_exp_uuid);
             prov_helper_scan_start();
 
             hal_led_pin_set(APP_PROVISIONING_LED, 1);
         }
-        else if (m_nw_state.provisioned_devices < (SERVER_NODE_COUNT + CLIENT_NODE_COUNT))
-        {
-            /* Start provisioning - rest of the devices */
-            m_exp_uuid.p_uuid = m_server_uuid_filter;
-            m_exp_uuid.length = SERVER_NODE_UUID_PREFIX_SIZE;
-            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Waiting for Server node to be provisioned ...\n");
-            prov_helper_provision_next_device(PROVISIONER_RETRY_COUNT, m_nw_state.next_device_address, &m_exp_uuid);
-            prov_helper_scan_start();
-
-            hal_led_pin_set(APP_PROVISIONING_LED, 1);
-        }
-        else
-        {
-            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "All servers provisioned\n");
-            return;
-        }
+//        else if (m_nw_state.provisioned_devices == 0)
+//        {
+//            /* Start provisioning - First provision the client with known UUID */
+//            m_exp_uuid.p_uuid = m_client_node_uuid;
+//            m_exp_uuid.length = NRF_MESH_UUID_SIZE;
+//            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Waiting for Client node to be provisioned ...\n");
+//            prov_helper_provision_next_device(PROVISIONER_RETRY_COUNT, m_nw_state.next_device_address, &m_exp_uuid);
+//            prov_helper_scan_start();
+//
+//            hal_led_pin_set(APP_PROVISIONING_LED, 1);
+//        }
+//        else if (m_nw_state.provisioned_devices < (SERVER_NODE_COUNT + CLIENT_NODE_COUNT))
+//        {
+//            /* Start provisioning - rest of the devices */
+//            m_exp_uuid.p_uuid = m_server_uuid_filter;
+//            m_exp_uuid.length = SERVER_NODE_UUID_PREFIX_SIZE;
+//            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Waiting for Server node to be provisioned ...\n");
+//            prov_helper_provision_next_device(PROVISIONER_RETRY_COUNT, m_nw_state.next_device_address, &m_exp_uuid);
+//            prov_helper_scan_start();
+//
+//            hal_led_pin_set(APP_PROVISIONING_LED, 1);
+//        }
+//        else
+//        {
+//            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "All servers provisioned\n");
+//            return;
+//        }
 
         m_node_prov_setup_started = true;
     }
@@ -598,7 +612,7 @@ int main(void)
 {
     initialize();
     execution_start(start);
-
+    button_event_handler(0);
     for (;;)
     {
         (void)sd_app_evt_wait();

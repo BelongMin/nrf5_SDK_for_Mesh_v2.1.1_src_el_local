@@ -271,6 +271,7 @@ static void app_config_successful_cb(void)
         hal_led_blink_ms(LEDS_MASK, LED_BLINK_INTERVAL_MS, LED_BLINK_CNT_PROV);
     }
 */
+    m_node_prov_setup_started = false;
 }
 
 static void app_config_failed_cb(void)
@@ -467,9 +468,10 @@ static bool app_flash_config_load(void)
 static void button_event_handler(uint32_t button_number)
 {
     __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Button %u pressed\n", button_number + 1);
+    node_setup_group(button_number);
     switch (button_number)
     {
-        case 0:
+        case 0:case 1:case 2:
         {
             /* Check if all devices have been provisioned or not */
             check_network_state();
@@ -612,7 +614,7 @@ int main(void)
 {
     initialize();
     execution_start(start);
-    button_event_handler(0);
+//    button_event_handler(0);
     for (;;)
     {
         (void)sd_app_evt_wait();

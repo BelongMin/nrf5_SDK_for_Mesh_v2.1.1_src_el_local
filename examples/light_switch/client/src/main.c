@@ -149,10 +149,10 @@ static void button_event_handler(uint32_t button_number)
     {
         case 0:
         case 1:
-            /* send unicast message, with inverted GPIO pin value */
-            status = simple_on_off_client_set(&m_clients[button_number],
-                                              !hal_led_pin_get(BSP_LED_0 + button_number));
-            break;
+//            /* send unicast message, with inverted GPIO pin value */
+//            status = simple_on_off_client_set(&m_clients[button_number],
+//                                              !hal_led_pin_get(BSP_LED_0 + button_number));
+//            break;
 
         case 2:
         case 3:

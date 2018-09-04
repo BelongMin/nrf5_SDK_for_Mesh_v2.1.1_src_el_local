@@ -111,24 +111,24 @@ static void button_event_handler(uint32_t button_number)
     __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Button %u pressed\n", button_number);
     switch (button_number)
     {
+         /* Initiate node reset */
+        case 0:
+        {
+            /* Clear all the states to reset the node. */
+            mesh_stack_config_clear();
+            node_reset();
+            break;
+        }
+
         /* Pressing SW1 on the Development Kit will result in LED state to toggle and trigger
         the STATUS message to inform client about the state change. This is a demonstration of
         state change publication due to local event. */
-        case 0:
+        case 3:
         {
             uint8_t value = !hal_led_pin_get(LED_PIN_NUMBER);
             __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "User action \n");
             hal_led_pin_set(LED_PIN_NUMBER, value);
             (void)simple_on_off_server_status_publish(&m_server, value);
-            break;
-        }
-
-        /* Initiate node reset */
-        case 3:
-        {
-            /* Clear all the states to reset the node. */
-            mesh_stack_config_clear();
-            node_reset();
             break;
         }
 

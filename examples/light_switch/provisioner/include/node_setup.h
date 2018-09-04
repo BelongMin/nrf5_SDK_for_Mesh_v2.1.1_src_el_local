@@ -75,6 +75,9 @@ typedef void (*node_setup_failed_cb_t)(void);
 
 /** @} end of NODE_SETUP_CALLBACKS */
 
+
+void node_setup_group(uint8_t group);
+
 /**
  * Starts state machine for configuring the newly provisioned node. If this function is called
  * when previous setup process is underway it will trigger error condition.

@@ -162,6 +162,7 @@ static const config_steps_t server_config_steps[] =
     NODE_SETUP_DONE
 };
 
+static uint16_t m_config_current_group;
 
 static uint16_t m_current_node_addr;
 static composition_data_t m_node_composition;
@@ -179,6 +180,26 @@ static bool m_status_checked;
 
 /* Forward declaration */
 static void config_step_execute(void);
+
+void node_setup_group(uint8_t group)
+{
+    switch(group) 
+    {
+        case 0:
+          m_config_current_group = GROUP_ADDRESS_GR1;
+          break;
+        case 1:
+          m_config_current_group = GROUP_ADDRESS_GR2;
+          break;
+        case 2:
+          m_config_current_group = GROUP_ADDRESS_GR3;
+          break;
+        case 3:
+          m_config_current_group = GROUP_ADDRESS_ALL;
+          break;
+        default: break;
+    }
+}
 
 /*************************************************************************************************/
 /* Set expected status opcode and acceptable value of status codes */
@@ -488,14 +509,15 @@ static void config_step_execute(void)
             uint16_t element_address = m_current_node_addr;
             nrf_mesh_address_t address = {NRF_MESH_ADDRESS_TYPE_INVALID, 0, NULL};
             address.type = NRF_MESH_ADDRESS_TYPE_GROUP;
-            if (m_current_node_addr % 0x02)
-            {
-                address.value  = GROUP_ADDRESS_ODD;
-            }
-            else
-            {
-                address.value  = GROUP_ADDRESS_EVEN;
-            }
+//            if (m_current_node_addr % 0x02)
+//            {
+//                address.value  = GROUP_ADDRESS_ODD;
+//            }
+//            else
+//            {
+//                address.value  = GROUP_ADDRESS_EVEN;
+//            }
+            address.value  = m_config_current_group;
             access_model_id_t model_id;
             model_id.company_id = ACCESS_COMPANY_ID_NORDIC;
             model_id.model_id = SIMPLE_ON_OFF_SERVER_MODEL_ID;
@@ -510,8 +532,9 @@ static void config_step_execute(void)
         case NODE_SETUP_CONFIG_PUBLICATION_ONOFF_CLIENT1:
         {
             config_publication_state_t pubstate = {0};
-            client_pub_state_set(&pubstate, m_current_node_addr + ELEMENT_IDX_ONOFF_CLIENT1,
-                                 UNPROV_START_ADDRESS + CLIENT_NODE_ONOFF_CLIENT_MODEL_INSTANCES + ELEMENT_IDX_ONOFF_CLIENT1);
+//            client_pub_state_set(&pubstate, m_current_node_addr + ELEMENT_IDX_ONOFF_CLIENT1,
+//                                 UNPROV_START_ADDRESS + CLIENT_NODE_ONOFF_CLIENT_MODEL_INSTANCES + ELEMENT_IDX_ONOFF_CLIENT1);
+            client_pub_state_set(&pubstate, m_current_node_addr + ELEMENT_IDX_ONOFF_CLIENT1, m_config_current_group);
             retry_on_fail(config_client_model_publication_set(&pubstate));
 
             static const uint8_t exp_status[] = {ACCESS_STATUS_SUCCESS};
@@ -522,8 +545,9 @@ static void config_step_execute(void)
         case NODE_SETUP_CONFIG_PUBLICATION_ONOFF_CLIENT2:
         {
             config_publication_state_t pubstate = {0};
-            client_pub_state_set(&pubstate, m_current_node_addr + ELEMENT_IDX_ONOFF_CLIENT2,
-                                 UNPROV_START_ADDRESS + CLIENT_NODE_ONOFF_CLIENT_MODEL_INSTANCES + ELEMENT_IDX_ONOFF_CLIENT2);
+//            client_pub_state_set(&pubstate, m_current_node_addr + ELEMENT_IDX_ONOFF_CLIENT2,
+//                                 UNPROV_START_ADDRESS + CLIENT_NODE_ONOFF_CLIENT_MODEL_INSTANCES + ELEMENT_IDX_ONOFF_CLIENT2);
+            client_pub_state_set(&pubstate, m_current_node_addr + ELEMENT_IDX_ONOFF_CLIENT2, m_config_current_group);
             retry_on_fail(config_client_model_publication_set(&pubstate));
 
             static const uint8_t exp_status[] = {ACCESS_STATUS_SUCCESS};
@@ -534,9 +558,10 @@ static void config_step_execute(void)
         case NODE_SETUP_CONFIG_PUBLICATION_ONOFF_CLIENT3:
         {
             config_publication_state_t pubstate = {0};
-            client_pub_state_set(&pubstate,
-                                 m_current_node_addr + ELEMENT_IDX_ONOFF_CLIENT3,
-                                 GROUP_ADDRESS_ODD);
+//            client_pub_state_set(&pubstate,
+//                                 m_current_node_addr + ELEMENT_IDX_ONOFF_CLIENT3,
+//                                 GROUP_ADDRESS_ODD);
+            client_pub_state_set(&pubstate, m_current_node_addr + ELEMENT_IDX_ONOFF_CLIENT3, m_config_current_group);
             retry_on_fail(config_client_model_publication_set(&pubstate));
 
             static const uint8_t exp_status[] = {ACCESS_STATUS_SUCCESS};
@@ -547,9 +572,10 @@ static void config_step_execute(void)
         case NODE_SETUP_CONFIG_PUBLICATION_ONOFF_CLIENT4:
         {
             config_publication_state_t pubstate = {0};
-            client_pub_state_set(&pubstate,
-                                 m_current_node_addr + ELEMENT_IDX_ONOFF_CLIENT4,
-                                 GROUP_ADDRESS_EVEN);
+//            client_pub_state_set(&pubstate,
+//                                 m_current_node_addr + ELEMENT_IDX_ONOFF_CLIENT4,
+//                                 GROUP_ADDRESS_EVEN);
+            client_pub_state_set(&pubstate, m_current_node_addr + ELEMENT_IDX_ONOFF_CLIENT4, m_config_current_group);
             retry_on_fail(config_client_model_publication_set(&pubstate));
 
             static const uint8_t exp_status[] = {ACCESS_STATUS_SUCCESS};
@@ -684,7 +710,7 @@ void node_setup_start(uint16_t address, uint8_t  retry_cnt, const uint8_t * p_ap
     else if (memcmp(&p_in_uuid[0], m_server_uuid_filter, SERVER_NODE_UUID_PREFIX_SIZE) == 0)
     {
         __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "SERVER_NODE_UUID_PREFIX\n");
-        mp_config_step = server1_server2_config_steps;
+        mp_config_step = server_config_steps;
     }
     config_step_execute();
 }

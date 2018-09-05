@@ -593,7 +593,7 @@ static void app_start(void)
     __LOG_XB(LOG_SRC_APP, LOG_LEVEL_INFO, "Dev key ", m_nw_state.self_devkey, NRF_MESH_KEY_SIZE);
     __LOG_XB(LOG_SRC_APP, LOG_LEVEL_INFO, "Net key ", m_nw_state.netkey, NRF_MESH_KEY_SIZE);
     __LOG_XB(LOG_SRC_APP, LOG_LEVEL_INFO, "App key ", m_nw_state.appkey, NRF_MESH_KEY_SIZE);
-    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Press Button 1 to start provisioning and configuration process. \n");
+    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Press Button 1 ~ 4 to start provisioning and configuration process. \n");
 }
 
 static void start(void)

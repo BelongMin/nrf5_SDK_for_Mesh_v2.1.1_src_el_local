@@ -165,6 +165,10 @@ static void button_event_handler(uint32_t button_number)
                 hal_led_pin_set(BSP_LED_0 + button_number, !hal_led_pin_get(BSP_LED_0 + button_number));
             }
             break;
+        case 7:
+            mesh_stack_config_clear();
+            node_reset();
+            break;
         default:
             break;
     }

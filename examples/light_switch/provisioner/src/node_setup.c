@@ -430,7 +430,7 @@ static void config_step_execute(void)
         /* Bind the On/Off client to the application key: */
         case NODE_SETUP_CONFIG_APPKEY_BIND_ONOFF_CLIENT:
         {
-            if (model_element_addr == 0)
+            if (model_element_addr == 0 || model_element_addr == m_current_node_addr)
             {
                 model_element_addr = m_current_node_addr + 1;
             }

@@ -40,6 +40,8 @@
 #include "log.h"
 #include "access_config.h"
 #include "simple_on_off_server.h"
+#include "el_simple_brightness_server.h"
+#include "el_simple_color_temperature_server.h"
 #include "light_switch_example_common.h"
 #include "mesh_app_utils.h"
 #include "net_state.h"
@@ -64,7 +66,35 @@
 #define LED_BLINK_CNT_PROV       (4)
 
 static simple_on_off_server_t m_server;
+static el_simple_brightness_server_t m_brightness_server;
+static el_simple_color_temperature_server_t m_color_temperature_server;
+
+//static uint8_t m_device_brightness;
+//static uint8_t m_device_color_temperature;
+static uint8_t m_current_on_off, m_current_brightness, m_current_color_temperature;
+
 static bool                   m_device_provisioned;
+
+static void led_event_handler(uint8_t on_off, uint8_t brightness, uint8_t color_temperature)
+{
+    if(on_off > 1 || brightness > LED_DUTY_MAX || color_temperature > LED_DUTY_MAX) return;
+
+    if(on_off == 0)
+    {
+        hal_pwm_duty_set(LED_COLOR_WARM_CHANNEL, LED_DUTY_MIN);
+        hal_pwm_duty_set(LED_COLOR_COLD_CHANNEL, LED_DUTY_MIN);
+    }
+    else
+    {
+        uint8_t warm_duty = (uint8_t)((float)color_temperature * (float)brightness/100.0f);
+        uint8_t cold_duty = (uint8_t)((float)(100 - color_temperature) * (float)brightness/100.0f);
+         hal_pwm_duty_set(LED_COLOR_WARM_CHANNEL, warm_duty);
+        hal_pwm_duty_set(LED_COLOR_COLD_CHANNEL, cold_duty);
+    }
+//    m_current_on_off = on_off;
+//    m_current_brightness = brightness;
+//    m_current_color_temperature = color_temperature;
+}
 
 static void provisioning_complete_cb(void)
 {
@@ -87,6 +117,40 @@ static bool on_off_server_set_cb(const simple_on_off_server_t * p_server, bool v
 {
     __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Got SET command to %u\n", value);
     hal_led_pin_set(LED_PIN_NUMBER, value);
+    m_current_on_off = value;
+    led_event_handler(m_current_on_off, m_current_brightness, m_current_color_temperature);
+    return value;
+}
+
+
+static uint8_t el_brightness_get_cb(const el_simple_brightness_server_t * p_server)
+{
+    return m_current_brightness;
+}
+
+static uint8_t el_brightness_set_cb(const el_simple_brightness_server_t * p_server, uint8_t value)
+{
+    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "--->Brightness of device has been set to %u<---\n", value);
+    
+    m_current_brightness = value;
+    led_event_handler(m_current_on_off, m_current_brightness, m_current_color_temperature);
+    
+    return value;
+}
+
+
+static uint8_t el_color_temperature_get_cb(const el_simple_color_temperature_server_t * p_server)
+{
+    return m_current_color_temperature;
+}
+
+static uint8_t el_color_temperature_set_cb(const el_simple_color_temperature_server_t * p_server, uint8_t value)
+{
+    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "--->Color Temperature of device has been set to %u<---\n", value);
+    
+    m_current_color_temperature = value;
+    led_event_handler(m_current_on_off, m_current_brightness, m_current_color_temperature);
+    
     return value;
 }
 
@@ -146,6 +210,9 @@ static void app_rtt_input_handler(int key)
     }
 }
 
+
+
+
 static void models_init_cb(void)
 {
     __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Initializing and adding models\n");
@@ -153,6 +220,19 @@ static void models_init_cb(void)
     m_server.set_cb = on_off_server_set_cb;
     ERROR_CHECK(simple_on_off_server_init(&m_server, 0));
     ERROR_CHECK(access_model_subscription_list_alloc(m_server.model_handle));
+
+    m_brightness_server.get_cb = el_brightness_get_cb;
+    m_brightness_server.set_cb = el_brightness_set_cb;
+    ERROR_CHECK(el_simple_brightness_server_init(&m_brightness_server, 1));
+    ERROR_CHECK(access_model_subscription_list_alloc(m_brightness_server.model_handle));
+
+    m_color_temperature_server.get_cb = el_color_temperature_get_cb;
+    m_color_temperature_server.set_cb = el_color_temperature_set_cb;
+    ERROR_CHECK(el_simple_color_temperature_server_init(&m_color_temperature_server, 2));
+    ERROR_CHECK(access_model_subscription_list_alloc(m_color_temperature_server.model_handle));
+
+    hal_led_mask_set(LEDS_MASK, false);
+    hal_led_blink_ms(LEDS_MASK, LED_BLINK_INTERVAL_MS, LED_BLINK_CNT_START);
 }
 
 static void mesh_init(void)
@@ -183,6 +263,12 @@ static void initialize(void)
 #if BUTTON_BOARD
     ERROR_CHECK(hal_buttons_init(button_event_handler));
 #endif
+    
+    hal_pwm_init();
+    m_current_on_off = 1;
+    m_current_brightness = 50;
+    m_current_color_temperature = 50;
+    led_event_handler(m_current_on_off, m_current_brightness, m_current_color_temperature);
 
     nrf_clock_lf_cfg_t lfc_cfg = DEV_BOARD_LF_CLK_CFG;
     ERROR_CHECK(mesh_softdevice_init(lfc_cfg));
@@ -218,6 +304,9 @@ int main(void)
     initialize();
     execution_start(start);
 
+//    hal_pwm_duty_set(LED_COLOR_WARM_CHANNEL, 100);
+//    hal_pwm_duty_set(LED_COLOR_COLD_CHANNEL, 1);
+    
     for (;;)
     {
         (void)sd_app_evt_wait();

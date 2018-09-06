@@ -43,6 +43,8 @@
 #include "log.h"
 #include "access_config.h"
 #include "simple_on_off_client.h"
+#include "el_simple_brightness_client.h"
+#include "el_simple_color_temperature_client.h"
 #include "rtt_input.h"
 #include "device_state_manager.h"
 #include "light_switch_example_common.h"
@@ -65,11 +67,13 @@
 #define LED_BLINK_CNT_PROV          (4)
 #define LED_BLINK_CNT_NO_REPLY      (6)
 
-
 static simple_on_off_client_t m_clients[CLIENT_MODEL_INSTANCE_COUNT];
+static el_simple_brightness_client_t m_brightness_client;
+static el_simple_color_temperature_client_t m_color_temperature_client;
 static const uint8_t          m_client_node_uuid[NRF_MESH_UUID_SIZE] = CLIENT_NODE_UUID;
 static bool                   m_device_provisioned;
 
+static uint8_t m_current_on_off, m_current_brightness, m_current_color_temperature;
 
 static void provisioning_complete_cb(void)
 {
@@ -124,6 +128,47 @@ static void client_status_cb(const simple_on_off_client_t * p_self, simple_on_of
             break;
     }
 }
+
+static void brightness_client_status_cb(const el_simple_brightness_client_t * p_self, el_simple_brightness_status_t status, uint16_t src)
+{
+    __LOG(LOG_SRC_APP, LOG_LEVEL_ERROR, "--->Brightness server status received <---\n");
+    switch (status)
+    {
+        case EL_SIMPLE_BRIGHTNESS_STATUS_NORMAL:
+            __LOG(LOG_SRC_APP, LOG_LEVEL_ERROR, "--->Brightness server status: EL_SIMPLE_BRIGHTNESS_STATUS_NORMAL <---\n");
+            break;
+
+        case EL_SIMPLE_BRIGHTNESS_STATUS_ERROR_NO_REPLY:
+            hal_led_blink_ms(LEDS_MASK, LED_BLINK_SHORT_INTERVAL_MS, LED_BLINK_CNT_NO_REPLY);
+            break;
+
+        case EL_SIMPLE_BRIGHTNESS_STATUS_CANCELLED:
+        default:
+            __LOG(LOG_SRC_APP, LOG_LEVEL_ERROR, "Unknown status \n");
+            break;
+    }
+}
+
+static void color_temperature_client_status_cb(const el_simple_color_temperature_client_t * p_self, el_simple_color_temperature_status_t status, uint16_t src)
+{
+    __LOG(LOG_SRC_APP, LOG_LEVEL_ERROR, "--->Color Temperature server status received <---\n");
+    switch (status)
+    {
+        case EL_SIMPLE_COLOR_TEMPERATURE_STATUS_NORMAL:
+            __LOG(LOG_SRC_APP, LOG_LEVEL_ERROR, "--->Color Temperature server status: EL_SIMPLE_BRIGHTNESS_STATUS_NORMAL <---\n");
+            break;
+
+        case EL_SIMPLE_COLOR_TEMPERATURE_STATUS_ERROR_NO_REPLY:
+            hal_led_blink_ms(LEDS_MASK, LED_BLINK_SHORT_INTERVAL_MS, LED_BLINK_CNT_NO_REPLY);
+            break;
+
+        case EL_SIMPLE_COLOR_TEMPERATURE_STATUS_CANCELLED:
+        default:
+            __LOG(LOG_SRC_APP, LOG_LEVEL_ERROR, "Unknown status \n");
+            break;
+    }
+}
+
 static void node_reset(void)
 {
     __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "----- Node reset  -----\n");
@@ -154,20 +199,39 @@ static void button_event_handler(uint32_t button_number)
 //                                              !hal_led_pin_get(BSP_LED_0 + button_number));
 //            break;
 
-        case 2:
-        case 3:
+        case 2:// Change On/Off
+        
             /* send a group message to the ODD group, with inverted GPIO pin value */
-            status = simple_on_off_client_set_unreliable(&m_clients[button_number],
-                                                         !hal_led_pin_get(BSP_LED_0 + button_number),
-                                                         GROUP_MSG_REPEAT_COUNT);
-            if (status == NRF_SUCCESS)
-            {
-                hal_led_pin_set(BSP_LED_0 + button_number, !hal_led_pin_get(BSP_LED_0 + button_number));
-            }
+            
+            m_current_on_off = !m_current_on_off;  
+            status = simple_on_off_client_set_unreliable(&m_clients[button_number], m_current_on_off, GROUP_MSG_REPEAT_COUNT);
+//            if (status == NRF_SUCCESS)
+//            {
+//                hal_led_pin_set(BSP_LED_0 + button_number, !hal_led_pin_get(BSP_LED_0 + button_number));
+//            }
             break;
-        case 7:
+        case 3:
             mesh_stack_config_clear();
             node_reset();
+            break;
+        case 4:// Brightness Add
+            m_current_brightness += 10;
+            if(m_current_brightness > LED_DUTY_MAX) m_current_brightness = LED_DUTY_MAX;
+            status = el_simple_brightness_client_set_unreliable(&m_brightness_client, m_current_brightness, GROUP_MSG_REPEAT_COUNT);
+            break;
+        case 5:// Brightness Reduce
+            m_current_brightness -= 10;
+            if(m_current_brightness < (LED_DUTY_MIN + 10)) m_current_brightness = (LED_DUTY_MIN + 10);
+            status = el_simple_brightness_client_set_unreliable(&m_brightness_client, m_current_brightness, GROUP_MSG_REPEAT_COUNT);
+            break;
+        case 6:// Color Temperature Add
+            m_current_color_temperature += 10;
+            if(m_current_color_temperature > LED_DUTY_MAX) m_current_color_temperature = LED_DUTY_MAX;
+            status = el_simple_color_temperature_client_set_unreliable(&m_color_temperature_client, m_current_color_temperature, GROUP_MSG_REPEAT_COUNT);
+            break;
+        case 7:// Color Temperature Reduce
+            if(m_current_color_temperature >= (LED_DUTY_MIN + 10)) m_current_color_temperature -= 10;
+            status = el_simple_color_temperature_client_set_unreliable(&m_color_temperature_client, m_current_color_temperature, GROUP_MSG_REPEAT_COUNT);
             break;
         default:
             break;
@@ -222,6 +286,16 @@ static void models_init_cb(void)
         ERROR_CHECK(simple_on_off_client_init(&m_clients[i], i + 1));
         ERROR_CHECK(access_model_subscription_list_alloc(m_clients[i].model_handle));
     }
+
+    m_brightness_client.status_cb = brightness_client_status_cb;
+    m_brightness_client.timeout_cb = client_publish_timeout_cb;
+    ERROR_CHECK(el_simple_brightness_client_init(&m_brightness_client, 5));
+    ERROR_CHECK(access_model_subscription_list_alloc(m_brightness_client.model_handle));
+
+    m_color_temperature_client.status_cb = color_temperature_client_status_cb;
+    m_color_temperature_client.timeout_cb = client_publish_timeout_cb;
+    ERROR_CHECK(el_simple_color_temperature_client_init(&m_color_temperature_client, 6));
+    ERROR_CHECK(access_model_subscription_list_alloc(m_color_temperature_client.model_handle));
 }
 
 static void mesh_init(void)
@@ -248,6 +322,9 @@ static void initialize(void)
 #if BUTTON_BOARD
     ERROR_CHECK(hal_buttons_init(button_event_handler));
 #endif
+    m_current_on_off = 1;
+    m_current_brightness = 50;
+    m_current_color_temperature = 50;
 
     nrf_clock_lf_cfg_t lfc_cfg = DEV_BOARD_LF_CLK_CFG;
     ERROR_CHECK(mesh_softdevice_init(lfc_cfg));

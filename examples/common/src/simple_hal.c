@@ -53,6 +53,8 @@
 
 #include "nrf_drv_pwm.h"
 
+
+
 /*****************************************************************************
  * Definitions
  *****************************************************************************/
@@ -174,9 +176,13 @@ static void hal_pwm_event_handler(nrf_drv_pwm_evt_type_t event_type)
 
 void hal_pwm_duty_set(uint8_t channel, uint8_t duty)
 {
-//    uint16_t * p_channels = (uint16_t *)&m_pwm_seq_values;
-//    uint16_t value = p_channels[channel];
-    m_pwm_is_updated = true;
+
+    if(duty > LED_DUTY_MAX)
+    {
+        duty = LED_DUTY_MAX;
+    }
+    
+    duty = 100 - duty;
     switch(channel) 
     {
         case 0:
@@ -194,6 +200,9 @@ void hal_pwm_duty_set(uint8_t channel, uint8_t duty)
         default:
           break;
     }
+    m_pwm_is_updated = true;
+//    uint16_t * p_channels = (uint16_t *)&m_pwm_seq_values;
+//    uint16_t value = p_channels[channel];
 //    p_channels[channel] = duty * 10;
 }
 
@@ -254,10 +263,10 @@ void hal_pwm_init(void)
     {
         .output_pins =
         {
-            11 | NRF_DRV_PWM_PIN_INVERTED, // channel 0
-            12 | NRF_DRV_PWM_PIN_INVERTED, // channel 1
-            17 | NRF_DRV_PWM_PIN_INVERTED, // channel 2
-            18 | NRF_DRV_PWM_PIN_INVERTED  // channel 3
+            LED_WARM | NRF_DRV_PWM_PIN_INVERTED, // channel 0
+            LED_COLD | NRF_DRV_PWM_PIN_INVERTED, // channel 1
+            NRF_DRV_PWM_PIN_NOT_USED, // channel 2
+            NRF_DRV_PWM_PIN_NOT_USED  // channel 3
         },
         .irq_priority = APP_IRQ_PRIORITY_LOWEST,
         .base_clock   = NRF_PWM_CLK_16MHz,
@@ -267,10 +276,10 @@ void hal_pwm_init(void)
         .step_mode    = NRF_PWM_STEP_AUTO
     };
     APP_ERROR_CHECK(nrf_drv_pwm_init(&m_pwm0, &config0, hal_pwm_event_handler));
-    m_pwm_seq_values.channel_0 = 20 * STEP_COUNT;
-    m_pwm_seq_values.channel_1 = 40 * STEP_COUNT;
-    m_pwm_seq_values.channel_2 = 60 * STEP_COUNT;
-    m_pwm_seq_values.channel_3 = 80 * STEP_COUNT;
+    m_pwm_seq_values.channel_0 = LED_CLOSE_LEVEL * STEP_COUNT;//close all channel
+    m_pwm_seq_values.channel_1 = LED_CLOSE_LEVEL * STEP_COUNT;
+    m_pwm_seq_values.channel_2 = LED_CLOSE_LEVEL * STEP_COUNT;
+    m_pwm_seq_values.channel_3 = LED_CLOSE_LEVEL * STEP_COUNT;
     pwm_seq_values_update = m_pwm_seq_values;
     (void)nrf_drv_pwm_simple_playback(&m_pwm0, &m_pwm_seq, 1,
                                       NRF_DRV_PWM_FLAG_LOOP);

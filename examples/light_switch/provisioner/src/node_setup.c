@@ -49,6 +49,11 @@
 #include "access_config.h"
 #include "simple_on_off_server.h"
 #include "simple_on_off_client.h"
+#include "el_simple_brightness_client.h"
+#include "el_simple_brightness_server.h"
+#include "el_simple_color_temperature_client.h"
+#include "el_simple_color_temperature_server.h"
+
 #include "health_common.h"
 
 #include "node_setup.h"
@@ -72,6 +77,10 @@ typedef enum
     NODE_SETUP_CONFIG_APPKEY_BIND_HEALTH,
     NODE_SETUP_CONFIG_APPKEY_BIND_ONOFF_SERVER,
     NODE_SETUP_CONFIG_APPKEY_BIND_ONOFF_CLIENT,
+    NODE_SETUP_CONFIG_APPKEY_BIND_BRIGHTNESS_SERVER,
+    NODE_SETUP_CONFIG_APPKEY_BIND_BRIGHTNESS_CLIENT,
+    NODE_SETUP_CONFIG_APPKEY_BIND_COLOR_TEMPERATURE_SERVER,
+    NODE_SETUP_CONFIG_APPKEY_BIND_COLOR_TEMPERATURE_CLIENT,
     NODE_SETUP_CONFIG_PUBLICATION_HEALTH,
     NODE_SETUP_CONFIG_PUBLICATION_ONOFF_SERVER,
     NODE_SETUP_CONFIG_PUBLICATION_ONOFF_SERVER1_2,
@@ -79,7 +88,11 @@ typedef enum
     NODE_SETUP_CONFIG_PUBLICATION_ONOFF_CLIENT2,
     NODE_SETUP_CONFIG_PUBLICATION_ONOFF_CLIENT3,
     NODE_SETUP_CONFIG_PUBLICATION_ONOFF_CLIENT4,
+    NODE_SETUP_CONFIG_PUBLICATION_BRIGHTNESS_CLIENT,
+    NODE_SETUP_CONFIG_PUBLICATION_COLOR_TEMPERATURE_CLIENT,
     NODE_SETUP_CONFIG_SUBSCRIPTION_ONOFF_SERVER,
+    NODE_SETUP_CONFIG_SUBSCRIPTION_BRIGHTNESS_SERVER,
+    NODE_SETUP_CONFIG_SUBSCRIPTION_COLOR_TEMPERATURE_SERVER,
     NODE_SETUP_DONE,
 } config_steps_t;
 
@@ -130,10 +143,14 @@ static const config_steps_t client_config_steps[] =
     NODE_SETUP_CONFIG_APPKEY_BIND_ONOFF_CLIENT,
     NODE_SETUP_CONFIG_APPKEY_BIND_ONOFF_CLIENT,
     NODE_SETUP_CONFIG_APPKEY_BIND_ONOFF_CLIENT,
+    NODE_SETUP_CONFIG_APPKEY_BIND_BRIGHTNESS_CLIENT,
+    NODE_SETUP_CONFIG_APPKEY_BIND_COLOR_TEMPERATURE_CLIENT,
     NODE_SETUP_CONFIG_PUBLICATION_ONOFF_CLIENT1,
     NODE_SETUP_CONFIG_PUBLICATION_ONOFF_CLIENT2,
     NODE_SETUP_CONFIG_PUBLICATION_ONOFF_CLIENT3,
     NODE_SETUP_CONFIG_PUBLICATION_ONOFF_CLIENT4,
+    NODE_SETUP_CONFIG_PUBLICATION_BRIGHTNESS_CLIENT,
+    NODE_SETUP_CONFIG_PUBLICATION_COLOR_TEMPERATURE_CLIENT,
     NODE_SETUP_DONE
 };
 
@@ -157,8 +174,12 @@ static const config_steps_t server_config_steps[] =
     NODE_SETUP_CONFIG_APPKEY_ADD,
     NODE_SETUP_CONFIG_APPKEY_BIND_HEALTH,
     NODE_SETUP_CONFIG_APPKEY_BIND_ONOFF_SERVER,
+    NODE_SETUP_CONFIG_APPKEY_BIND_BRIGHTNESS_SERVER,
+    NODE_SETUP_CONFIG_APPKEY_BIND_COLOR_TEMPERATURE_SERVER,
     NODE_SETUP_CONFIG_PUBLICATION_HEALTH,
     NODE_SETUP_CONFIG_SUBSCRIPTION_ONOFF_SERVER,
+    NODE_SETUP_CONFIG_SUBSCRIPTION_BRIGHTNESS_SERVER,
+    NODE_SETUP_CONFIG_SUBSCRIPTION_COLOR_TEMPERATURE_SERVER,
     NODE_SETUP_DONE
 };
 
@@ -322,6 +343,44 @@ static void client_pub_state_set(config_publication_state_t *p_pubstate, uint16_
             p_pubstate->element_address, p_pubstate->publish_address.value);
 }
 
+static void brightness_client_pub_state_set(config_publication_state_t *p_pubstate, uint16_t element_addr,
+                                     uint16_t publish_addr)
+{
+    p_pubstate->element_address = element_addr;
+    p_pubstate->publish_address.type = nrf_mesh_address_type_get(publish_addr);
+    p_pubstate->publish_address.value = publish_addr;
+    p_pubstate->appkey_index = m_appkey_idx;
+    p_pubstate->frendship_credential_flag = false;
+    p_pubstate->publish_ttl = (SERVER_NODE_COUNT > NRF_MESH_TTL_MAX ? NRF_MESH_TTL_MAX : SERVER_NODE_COUNT);
+    p_pubstate->publish_period.step_num = 0;
+    p_pubstate->publish_period.step_res = ACCESS_PUBLISH_RESOLUTION_100MS;
+    p_pubstate->retransmit_count = 1;
+    p_pubstate->retransmit_interval = 0;
+    p_pubstate->model_id.company_id = ACCESS_COMPANY_ID_NORDIC;
+    p_pubstate->model_id.model_id = EL_SIMPLE_BRIGHTNESS_MODEL_CLIENT_ID;
+    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Set: Brightness client: 0x%04x  pub addr: 0x%04x\n",
+            p_pubstate->element_address, p_pubstate->publish_address.value);
+}
+
+static void color_temperature_client_pub_state_set(config_publication_state_t *p_pubstate, uint16_t element_addr,
+                                     uint16_t publish_addr)
+{
+    p_pubstate->element_address = element_addr;
+    p_pubstate->publish_address.type = nrf_mesh_address_type_get(publish_addr);
+    p_pubstate->publish_address.value = publish_addr;
+    p_pubstate->appkey_index = m_appkey_idx;
+    p_pubstate->frendship_credential_flag = false;
+    p_pubstate->publish_ttl = (SERVER_NODE_COUNT > NRF_MESH_TTL_MAX ? NRF_MESH_TTL_MAX : SERVER_NODE_COUNT);
+    p_pubstate->publish_period.step_num = 0;
+    p_pubstate->publish_period.step_res = ACCESS_PUBLISH_RESOLUTION_100MS;
+    p_pubstate->retransmit_count = 1;
+    p_pubstate->retransmit_interval = 0;
+    p_pubstate->model_id.company_id = ACCESS_COMPANY_ID_NORDIC;
+    p_pubstate->model_id.model_id = EL_SIMPLE_COLOR_TEMPERATURE_MODEL_CLIENT_ID;
+    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Set: Color Temperature client: 0x%04x  pub addr: 0x%04x\n",
+            p_pubstate->element_address, p_pubstate->publish_address.value);
+}
+
 
 /*************************************************************************************************/
 /* Node setup functionality related static functions */
@@ -427,6 +486,36 @@ static void config_step_execute(void)
             break;
         }
 
+        /* Bind the Brightness server to the application key: */
+        case NODE_SETUP_CONFIG_APPKEY_BIND_BRIGHTNESS_SERVER:
+        {
+            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "App key bind: Simple Brightness server\n");
+            access_model_id_t model_id;
+            model_id.company_id = ACCESS_COMPANY_ID_NORDIC;
+            model_id.model_id = EL_SIMPLE_BRIGHTNESS_SERVER_MODLE_ID;
+            uint16_t element_address = m_current_node_addr + 1;
+            retry_on_fail(config_client_model_app_bind(element_address, m_appkey_idx, model_id));
+
+            static const uint8_t exp_status[] = {ACCESS_STATUS_SUCCESS};
+            expected_status_set(CONFIG_OPCODE_MODEL_APP_STATUS, sizeof(exp_status), exp_status);
+            break;
+        }
+
+        /* Bind the Color Temperature server to the application key: */
+        case NODE_SETUP_CONFIG_APPKEY_BIND_COLOR_TEMPERATURE_SERVER:
+        {
+            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "App key bind: Simple Brightness server\n");
+            access_model_id_t model_id;
+            model_id.company_id = ACCESS_COMPANY_ID_NORDIC;
+            model_id.model_id = EL_SIMPLE_COLOR_TEMPERATURE_SERVER_MODLE_ID;
+            uint16_t element_address = m_current_node_addr + 2;
+            retry_on_fail(config_client_model_app_bind(element_address, m_appkey_idx, model_id));
+
+            static const uint8_t exp_status[] = {ACCESS_STATUS_SUCCESS};
+            expected_status_set(CONFIG_OPCODE_MODEL_APP_STATUS, sizeof(exp_status), exp_status);
+            break;
+        }
+
         /* Bind the On/Off client to the application key: */
         case NODE_SETUP_CONFIG_APPKEY_BIND_ONOFF_CLIENT:
         {
@@ -449,6 +538,40 @@ static void config_step_execute(void)
             {
                 model_element_addr++;
             }
+            break;
+        }
+
+        /* Bind the Brightness client to the application key: */
+        case NODE_SETUP_CONFIG_APPKEY_BIND_BRIGHTNESS_CLIENT:
+        {
+            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "App key bind: Simple Brightness client on element 0x%04x\n", model_element_addr);
+            access_model_id_t model_id;
+            model_id.company_id = ACCESS_COMPANY_ID_NORDIC;
+            model_id.model_id = EL_SIMPLE_BRIGHTNESS_MODEL_CLIENT_ID;
+            uint16_t element_address = m_current_node_addr + ELEMENT_IDX_ONOFF_CLIENT4 + 1;
+            status = config_client_model_app_bind(element_address, m_appkey_idx, model_id);
+//            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Simple Brightness client bind status 0x%04x\n", status);
+            retry_on_fail(status);
+
+            static const uint8_t exp_status[] = {ACCESS_STATUS_SUCCESS};
+            expected_status_set(CONFIG_OPCODE_MODEL_APP_STATUS, sizeof(exp_status), exp_status);
+            break;
+        }
+
+        /* Bind the Color Temperature client to the application key: */
+        case NODE_SETUP_CONFIG_APPKEY_BIND_COLOR_TEMPERATURE_CLIENT:
+        {
+            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "App key bind: Simple Color Temperature client on element 0x%04x\n", model_element_addr);
+            access_model_id_t model_id;
+            model_id.company_id = ACCESS_COMPANY_ID_NORDIC;
+            model_id.model_id = EL_SIMPLE_COLOR_TEMPERATURE_MODEL_CLIENT_ID;
+            uint16_t element_address = m_current_node_addr + ELEMENT_IDX_ONOFF_CLIENT4 + 2;
+            status = config_client_model_app_bind(element_address, m_appkey_idx, model_id);
+//            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Simple Color Temperature client bind status 0x%04x\n", status);
+            retry_on_fail(status);
+
+            static const uint8_t exp_status[] = {ACCESS_STATUS_SUCCESS};
+            expected_status_set(CONFIG_OPCODE_MODEL_APP_STATUS, sizeof(exp_status), exp_status);
             break;
         }
 
@@ -528,6 +651,44 @@ static void config_step_execute(void)
             break;
         }
 
+        /* Configure subscription address for the Brightness server */
+        case NODE_SETUP_CONFIG_SUBSCRIPTION_BRIGHTNESS_SERVER:
+        {
+            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Adding subscription BRIGHTNESS_SERVER\n");
+            uint16_t element_address = m_current_node_addr + 1;
+            nrf_mesh_address_t address = {NRF_MESH_ADDRESS_TYPE_INVALID, 0, NULL};
+            address.type = NRF_MESH_ADDRESS_TYPE_GROUP;
+            address.value  = m_config_current_group;
+
+            access_model_id_t model_id;
+            model_id.company_id = ACCESS_COMPANY_ID_NORDIC;
+            model_id.model_id = EL_SIMPLE_BRIGHTNESS_SERVER_MODLE_ID;
+            retry_on_fail(config_client_model_subscription_add(element_address, address, model_id));
+
+            static const uint8_t exp_status[] = {ACCESS_STATUS_SUCCESS};
+            expected_status_set(CONFIG_OPCODE_MODEL_SUBSCRIPTION_STATUS, sizeof(exp_status), exp_status);
+            break;
+        }
+
+        /* Configure subscription address for the Color Temperature server */
+        case NODE_SETUP_CONFIG_SUBSCRIPTION_COLOR_TEMPERATURE_SERVER:
+        {
+            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Adding subscription Color Temperature\n");
+            uint16_t element_address = m_current_node_addr + 2;
+            nrf_mesh_address_t address = {NRF_MESH_ADDRESS_TYPE_INVALID, 0, NULL};
+            address.type = NRF_MESH_ADDRESS_TYPE_GROUP;
+            address.value  = m_config_current_group;
+
+            access_model_id_t model_id;
+            model_id.company_id = ACCESS_COMPANY_ID_NORDIC;
+            model_id.model_id = EL_SIMPLE_COLOR_TEMPERATURE_SERVER_MODLE_ID;
+            retry_on_fail(config_client_model_subscription_add(element_address, address, model_id));
+
+            static const uint8_t exp_status[] = {ACCESS_STATUS_SUCCESS};
+            expected_status_set(CONFIG_OPCODE_MODEL_SUBSCRIPTION_STATUS, sizeof(exp_status), exp_status);
+            break;
+        }
+
         /* Configure the 1st client model to 1st server */
         case NODE_SETUP_CONFIG_PUBLICATION_ONOFF_CLIENT1:
         {
@@ -576,6 +737,32 @@ static void config_step_execute(void)
 //                                 m_current_node_addr + ELEMENT_IDX_ONOFF_CLIENT4,
 //                                 GROUP_ADDRESS_EVEN);
             client_pub_state_set(&pubstate, m_current_node_addr + ELEMENT_IDX_ONOFF_CLIENT4, m_config_current_group);
+            retry_on_fail(config_client_model_publication_set(&pubstate));
+
+            static const uint8_t exp_status[] = {ACCESS_STATUS_SUCCESS};
+            expected_status_set(CONFIG_OPCODE_MODEL_PUBLICATION_STATUS, sizeof(exp_status), exp_status);
+            break;
+        }
+
+        case NODE_SETUP_CONFIG_PUBLICATION_BRIGHTNESS_CLIENT:
+        {
+            config_publication_state_t pubstate = {0};
+            brightness_client_pub_state_set(&pubstate,
+                                 m_current_node_addr + ELEMENT_IDX_ONOFF_CLIENT4 + 1,
+                                 m_config_current_group);
+            retry_on_fail(config_client_model_publication_set(&pubstate));
+
+            static const uint8_t exp_status[] = {ACCESS_STATUS_SUCCESS};
+            expected_status_set(CONFIG_OPCODE_MODEL_PUBLICATION_STATUS, sizeof(exp_status), exp_status);
+            break;
+        }
+
+        case NODE_SETUP_CONFIG_PUBLICATION_COLOR_TEMPERATURE_CLIENT:
+        {
+            config_publication_state_t pubstate = {0};
+            color_temperature_client_pub_state_set(&pubstate,
+                                 m_current_node_addr + ELEMENT_IDX_ONOFF_CLIENT4 + 2,
+                                 m_config_current_group);
             retry_on_fail(config_client_model_publication_set(&pubstate));
 
             static const uint8_t exp_status[] = {ACCESS_STATUS_SUCCESS};

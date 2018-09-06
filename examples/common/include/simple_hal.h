@@ -60,6 +60,16 @@
 /** Set LED Mask state to On. */
 #define LED_MASK_STATE_ON     (true)
 
+#define LED_WARM       17
+#define LED_COLD       18
+
+#define LED_DUTY_MIN 0
+#define LED_DUTY_MAX 100
+
+#define LED_CLOSE_LEVEL 100
+
+#define LED_COLOR_WARM_CHANNEL 0
+#define LED_COLOR_COLD_CHANNEL 1
 
 /** Boards with user buttons */
 #define BUTTON_BOARD (defined(BOARD_PTR5618) || defined(BOARD_PCA10040) || defined(BOARD_PCA10028) || defined(BOARD_PCA10056)) //lint -e491 // Suppress "non-standard use of 'defined' preprocessor operator"

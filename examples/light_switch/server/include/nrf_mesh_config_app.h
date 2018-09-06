@@ -82,7 +82,8 @@
  * @note This value has to be greater than two to fit the configuration and health models,
  * plus the number of models needed by the application.
  */
-#define ACCESS_MODEL_COUNT (3)
+//#define ACCESS_MODEL_COUNT (3)
+#define ACCESS_MODEL_COUNT (5)
 
 /**
  * The number of elements in the application.
@@ -90,7 +91,8 @@
  * @warning If the application is to support multiple _instances_ of the _same_ model, they cannot
  * belong in the same element and a separate element is needed for the new instance.
  */
-#define ACCESS_ELEMENT_COUNT (1)
+//#define ACCESS_ELEMENT_COUNT (1)
+#define ACCESS_ELEMENT_COUNT (3)
 
 /**
  * The number of allocated subscription lists for the application.
@@ -98,7 +100,8 @@
  * @note The application should set this number to @ref ACCESS_MODEL_COUNT minus the number of
  * models operating on shared states.
  */
-#define ACCESS_SUBSCRIPTION_LIST_COUNT (1)
+//#define ACCESS_SUBSCRIPTION_LIST_COUNT (1)
+#define ACCESS_SUBSCRIPTION_LIST_COUNT (3)
 
 /**
  * The number of pages of flash storage reserved for the access layer for persistent data storage.
@@ -124,20 +127,30 @@
  * Sizes for the internal storage of the Device State Manager.
  * @{
  */
+///** Maximum number of subnetworks. */
+//#define DSM_SUBNET_MAX                                  (1)
+///** Maximum number of applications */
+//#define DSM_APP_MAX                                     (1)
+///** Maximum number of device keys */
+//#define DSM_DEVICE_MAX                                  (1)
+///** Maximum number of virtual addresses. */
+//#define DSM_VIRTUAL_ADDR_MAX                            (1)
 /** Maximum number of subnetworks. */
-#define DSM_SUBNET_MAX                                  (1)
+#define DSM_SUBNET_MAX                                  (2)
 /** Maximum number of applications */
-#define DSM_APP_MAX                                     (1)
+#define DSM_APP_MAX                                     (8)
 /** Maximum number of device keys */
 #define DSM_DEVICE_MAX                                  (1)
 /** Maximum number of virtual addresses. */
-#define DSM_VIRTUAL_ADDR_MAX                            (1)
+#define DSM_VIRTUAL_ADDR_MAX                            (8)
+
 /** Maximum number of non-virtual addresses.
  * - Simple OnOff publication
  * - Health publication
  * - Subscription address
  */
-#define DSM_NONVIRTUAL_ADDR_MAX                         (3)
+//#define DSM_NONVIRTUAL_ADDR_MAX                         (3)
+#define DSM_NONVIRTUAL_ADDR_MAX                         (8)
 /** Number of flash pages reserved for the DSM storage */
 #define DSM_FLASH_PAGE_COUNT                            (1)
 /** @} end of DSM_CONFIG */

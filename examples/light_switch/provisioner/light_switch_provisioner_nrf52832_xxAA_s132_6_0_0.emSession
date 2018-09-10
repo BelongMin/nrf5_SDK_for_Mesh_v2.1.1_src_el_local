@@ -26,9 +26,9 @@
   <ProjectSessionItem path="light_switch_provisioner_nrf52832_xxAA_s132_6.0.0;light_switch_provisioner_nrf52832_xxAA_s132_6.0.0;Access"/>
   <ProjectSessionItem path="light_switch_provisioner_nrf52832_xxAA_s132_6.0.0;light_switch_provisioner_nrf52832_xxAA_s132_6.0.0;Application"/>
   <ProjectSessionItem path="light_switch_provisioner_nrf52832_xxAA_s132_6.0.0;light_switch_provisioner_nrf52832_xxAA_s132_6.0.0;Configuration Model"/>
-  <ProjectSessionItem path="light_switch_provisioner_nrf52832_xxAA_s132_6.0.0;light_switch_provisioner_nrf52832_xxAA_s132_6.0.0;Provisioning"/>
-  <ProjectSessionItem path="light_switch_provisioner_nrf52832_xxAA_s132_6.0.0;light_switch_provisioner_nrf52832_xxAA_s132_6.0.0;Simple Brightness Model"/>
-  <ProjectSessionItem path="light_switch_provisioner_nrf52832_xxAA_s132_6.0.0;light_switch_provisioner_nrf52832_xxAA_s132_6.0.0;Simple Color Temperature Model"/>
+  <ProjectSessionItem path="light_switch_provisioner_nrf52832_xxAA_s132_6.0.0;light_switch_provisioner_nrf52832_xxAA_s132_6.0.0;Health Model"/>
+  <ProjectSessionItem path="light_switch_provisioner_nrf52832_xxAA_s132_6.0.0;light_switch_provisioner_nrf52832_xxAA_s132_6.0.0;Mesh stack"/>
+  <ProjectSessionItem path="light_switch_provisioner_nrf52832_xxAA_s132_6.0.0;light_switch_provisioner_nrf52832_xxAA_s132_6.0.0;Simple Binding"/>
   <ProjectSessionItem path="light_switch_provisioner_nrf52832_xxAA_s132_6.0.0;light_switch_provisioner_nrf52832_xxAA_s132_6.0.0;Simple OnOff Model"/>
  </Project>
  <Register1>
@@ -62,13 +62,15 @@
   <Watches active="0" update="Never"/>
  </Watch4>
  <Files>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="613" useTextEdit="1" useBinaryEdit="0" left="0" path="src/main.c" selected="1" top="539" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="844" useTextEdit="1" useBinaryEdit="0" left="0" path="src/node_setup.c" selected="0" top="826" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="9" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../models/simple_brightness/src/el_simple_brightness_client.c" selected="0" top="0" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="9" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../models/simple_color_temperature/src/el_simplecolor_temperature_client.c" selected="0" top="0" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="0" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../models/simple_color_temperature/include/el_simple_color_temperature_client.h" selected="0" top="0" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="27" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../models/simple_brightness/include/el_simple_brightness_client.h" selected="0" top="0" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="9" y="266" useTextEdit="1" useBinaryEdit="0" left="0" path="../../common/src/simple_hal.c" selected="0" top="237" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="146" useTextEdit="1" useBinaryEdit="0" left="0" path="include/nrf_mesh_config_app.h" selected="0" top="0" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="5" y="656" useTextEdit="1" useBinaryEdit="0" left="0" path="src/main.c" selected="1" top="637" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="58" useTextEdit="1" useBinaryEdit="0" left="0" path="D:/SEGGER Embedded Studio for ARM/include/string.h" selected="0" top="40" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="9" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../models/simple_binding/src/el_simple_binding_server.c" selected="0" top="0" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="16" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../models/simple_binding/include/el_simple_binding_server.h" selected="0" top="0" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="19" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../models/simple_binding/include/el_simple_binding_common.h" selected="0" top="0" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="35" y="838" useTextEdit="1" useBinaryEdit="0" left="0" path="src/node_setup.c" selected="0" top="799" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="118" useTextEdit="1" useBinaryEdit="0" left="0" path="include/node_setup.h" selected="0" top="96" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="52" useTextEdit="1" useBinaryEdit="0" left="0" path="include/example_network_config.h" selected="0" top="29" codecName="Default"/>
  </Files>
- <ARMCrossStudioWindow activeProject="light_switch_provisioner_nrf52832_xxAA_s132_6.0.0" fileDialogDefaultFilter="*.c" autoConnectTarget="J-Link" buildConfiguration="Debug" debugSearchFileMap="" fileDialogInitialDirectory="E:/Nordic/nrf5_SDK_for_Mesh_v2.1.1_src_el_local/models/simple_color_temperature/src" debugSearchPath="" autoConnectCapabilities="3711"/>
+ <ARMCrossStudioWindow activeProject="light_switch_provisioner_nrf52832_xxAA_s132_6.0.0" fileDialogDefaultFilter="*.c" autoConnectTarget="J-Link" buildConfiguration="Debug" debugSearchFileMap="" fileDialogInitialDirectory="E:/Nordic/nrf5_SDK_for_Mesh_v2.1.1_src_el_local/examples/light_switch/provisioner/include" debugSearchPath="" autoConnectCapabilities="3711"/>
 </session>

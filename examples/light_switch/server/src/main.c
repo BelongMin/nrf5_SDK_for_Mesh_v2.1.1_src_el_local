@@ -42,6 +42,7 @@
 #include "simple_on_off_server.h"
 #include "el_simple_brightness_server.h"
 #include "el_simple_color_temperature_server.h"
+#include "el_simple_binding_client.h"
 #include "light_switch_example_common.h"
 #include "mesh_app_utils.h"
 #include "net_state.h"
@@ -68,7 +69,7 @@
 static simple_on_off_server_t m_server;
 static el_simple_brightness_server_t m_brightness_server;
 static el_simple_color_temperature_server_t m_color_temperature_server;
-
+static el_simple_binding_client_t m_binding_client;
 //static uint8_t m_device_brightness;
 //static uint8_t m_device_color_temperature;
 static uint8_t m_current_on_off, m_current_brightness, m_current_color_temperature;
@@ -83,13 +84,17 @@ static void led_event_handler(uint8_t on_off, uint8_t brightness, uint8_t color_
     {
         hal_pwm_duty_set(LED_COLOR_WARM_CHANNEL, LED_DUTY_MIN);
         hal_pwm_duty_set(LED_COLOR_COLD_CHANNEL, LED_DUTY_MIN);
+        hal_pwm_duty_set(2, LED_DUTY_MIN);
+        hal_pwm_duty_set(3, LED_DUTY_MIN);
     }
     else
     {
         uint8_t warm_duty = (uint8_t)((float)color_temperature * (float)brightness/100.0f);
         uint8_t cold_duty = (uint8_t)((float)(100 - color_temperature) * (float)brightness/100.0f);
-         hal_pwm_duty_set(LED_COLOR_WARM_CHANNEL, warm_duty);
+        hal_pwm_duty_set(LED_COLOR_WARM_CHANNEL, warm_duty);
         hal_pwm_duty_set(LED_COLOR_COLD_CHANNEL, cold_duty);
+        hal_pwm_duty_set(2, warm_duty);
+        hal_pwm_duty_set(3, cold_duty);
     }
 //    m_current_on_off = on_off;
 //    m_current_brightness = brightness;
@@ -154,6 +159,26 @@ static uint8_t el_color_temperature_set_cb(const el_simple_color_temperature_ser
     return value;
 }
 
+static void binding_client_status_cb(const el_simple_binding_client_t * p_self, el_simple_binding_status_t status, uint16_t src)
+{
+    __LOG(LOG_SRC_APP, LOG_LEVEL_ERROR, "--->Binding server status received <---\n");
+    switch (status)
+    {
+        case EL_SIMPLE_BINDING_STATUS_NORMAL:
+            __LOG(LOG_SRC_APP, LOG_LEVEL_ERROR, "--->Binding server status: EL_SIMPLE_BRIGHTNESS_STATUS_NORMAL <---\n");
+            break;
+
+        case EL_SIMPLE_BINDING_STATUS_ERROR_NO_REPLY:
+            __LOG(LOG_SRC_APP, LOG_LEVEL_ERROR, "--->Binding server status: EL_SIMPLE_BINDING_STATUS_ERROR_NO_REPLY <---\n");
+            break;
+
+        case EL_SIMPLE_BINDING_STATUS_CANCELLED:
+        default:
+            __LOG(LOG_SRC_APP, LOG_LEVEL_ERROR, "Unknown status \n");
+            break;
+    }
+}
+
 static void node_reset(void)
 {
     __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "----- Node reset  -----\n");
@@ -172,19 +197,12 @@ static void config_server_evt_cb(const config_server_evt_t * p_evt)
 
 static void button_event_handler(uint32_t button_number)
 {
+    el_simple_binding_data_t node_data = {0, 0};
+    dsm_local_unicast_address_t node_address;
     __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Button %u pressed\n", button_number);
     switch (button_number)
     {
-         /* Initiate node reset */
-        case 0:
-        {
-            /* Clear all the states to reset the node. */
-            mesh_stack_config_clear();
-            node_reset();
-            break;
-        }
-
-        /* Pressing SW1 on the Development Kit will result in LED state to toggle and trigger
+        /* Pressing SW4 on the Development Kit will result in LED state to toggle and trigger
         the STATUS message to inform client about the state change. This is a demonstration of
         state change publication due to local event. */
         case 3:
@@ -196,6 +214,22 @@ static void button_event_handler(uint32_t button_number)
             break;
         }
 
+        case 7: /* Initiate node reset */
+        {
+            dsm_local_unicast_addresses_get(&node_address);
+            node_data.binding_type = EL_BINDING_TYPE_RX;
+            node_data.binding_addr = node_address.address_start;
+            (void)el_simple_binding_client_set(&m_binding_client, node_data);
+            break;
+        }
+
+        case 8: /* Initiate node reset */
+        {
+            /* Clear all the states to reset the node. */
+            mesh_stack_config_clear();
+            node_reset();
+            break;
+        }
         default:
             break;
     }
@@ -209,9 +243,6 @@ static void app_rtt_input_handler(int key)
         button_event_handler(button_number);
     }
 }
-
-
-
 
 static void models_init_cb(void)
 {
@@ -230,6 +261,11 @@ static void models_init_cb(void)
     m_color_temperature_server.set_cb = el_color_temperature_set_cb;
     ERROR_CHECK(el_simple_color_temperature_server_init(&m_color_temperature_server, 2));
     ERROR_CHECK(access_model_subscription_list_alloc(m_color_temperature_server.model_handle));
+
+    m_binding_client.status_cb = binding_client_status_cb;
+    m_binding_client.timeout_cb = NULL;
+    ERROR_CHECK(el_simple_binding_client_init(&m_binding_client, 0));
+    ERROR_CHECK(access_model_subscription_list_alloc(m_binding_client.model_handle));
 
     hal_led_mask_set(LEDS_MASK, false);
     hal_led_blink_ms(LEDS_MASK, LED_BLINK_INTERVAL_MS, LED_BLINK_CNT_START);

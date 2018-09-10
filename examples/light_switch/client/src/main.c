@@ -45,6 +45,7 @@
 #include "simple_on_off_client.h"
 #include "el_simple_brightness_client.h"
 #include "el_simple_color_temperature_client.h"
+#include "el_simple_binding_client.h"
 #include "rtt_input.h"
 #include "device_state_manager.h"
 #include "light_switch_example_common.h"
@@ -70,6 +71,7 @@
 static simple_on_off_client_t m_clients[CLIENT_MODEL_INSTANCE_COUNT];
 static el_simple_brightness_client_t m_brightness_client;
 static el_simple_color_temperature_client_t m_color_temperature_client;
+static el_simple_binding_client_t m_binding_client;
 static const uint8_t          m_client_node_uuid[NRF_MESH_UUID_SIZE] = CLIENT_NODE_UUID;
 static bool                   m_device_provisioned;
 
@@ -169,6 +171,26 @@ static void color_temperature_client_status_cb(const el_simple_color_temperature
     }
 }
 
+static void binding_client_status_cb(const el_simple_binding_client_t * p_self, el_simple_binding_status_t status, uint16_t src)
+{
+    __LOG(LOG_SRC_APP, LOG_LEVEL_ERROR, "--->Binding server status received <---\n");
+    switch (status)
+    {
+        case EL_SIMPLE_BINDING_STATUS_NORMAL:
+            __LOG(LOG_SRC_APP, LOG_LEVEL_ERROR, "--->Binding server status: EL_SIMPLE_BRIGHTNESS_STATUS_NORMAL <---\n");
+            break;
+
+        case EL_SIMPLE_BINDING_STATUS_ERROR_NO_REPLY:
+            hal_led_blink_ms(LEDS_MASK, LED_BLINK_SHORT_INTERVAL_MS, LED_BLINK_CNT_NO_REPLY);
+            break;
+
+        case EL_SIMPLE_BINDING_STATUS_CANCELLED:
+        default:
+            __LOG(LOG_SRC_APP, LOG_LEVEL_ERROR, "Unknown status \n");
+            break;
+    }
+}
+
 static void node_reset(void)
 {
     __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "----- Node reset  -----\n");
@@ -190,25 +212,23 @@ static void button_event_handler(uint32_t button_number)
     __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Button %u pressed\n", button_number);
 
     uint32_t status = NRF_SUCCESS;
+    el_simple_binding_data_t node_data = {0, 0};
+    dsm_local_unicast_address_t node_address;
     switch (button_number)
     {
         case 0:
         case 1:
-//            /* send unicast message, with inverted GPIO pin value */
-//            status = simple_on_off_client_set(&m_clients[button_number],
-//                                              !hal_led_pin_get(BSP_LED_0 + button_number));
-//            break;
-
         case 2:// Change On/Off
-        
             /* send a group message to the ODD group, with inverted GPIO pin value */
             
             m_current_on_off = !m_current_on_off;  
             status = simple_on_off_client_set_unreliable(&m_clients[button_number], m_current_on_off, GROUP_MSG_REPEAT_COUNT);
-//            if (status == NRF_SUCCESS)
-//            {
-//                hal_led_pin_set(BSP_LED_0 + button_number, !hal_led_pin_get(BSP_LED_0 + button_number));
-//            }
+            
+//            dsm_local_unicast_addresses_get(&node_address);
+//            node_data.binding_type = EL_BINDING_TYPE_TX;
+//            node_data.binding_addr = node_address.address_start;
+//            status = el_simple_binding_client_set(&m_binding_client, node_data);
+
             break;
         case 3:
             mesh_stack_config_clear();
@@ -230,8 +250,19 @@ static void button_event_handler(uint32_t button_number)
             status = el_simple_color_temperature_client_set_unreliable(&m_color_temperature_client, m_current_color_temperature, GROUP_MSG_REPEAT_COUNT);
             break;
         case 7:// Color Temperature Reduce
-            if(m_current_color_temperature >= (LED_DUTY_MIN + 10)) m_current_color_temperature -= 10;
-            status = el_simple_color_temperature_client_set_unreliable(&m_color_temperature_client, m_current_color_temperature, GROUP_MSG_REPEAT_COUNT);
+//            if(m_current_color_temperature >= (LED_DUTY_MIN + 10)) m_current_color_temperature -= 10;
+//            status = el_simple_color_temperature_client_set_unreliable(&m_color_temperature_client, m_current_color_temperature, GROUP_MSG_REPEAT_COUNT);
+           
+            dsm_local_unicast_addresses_get(&node_address);
+            node_data.binding_type = EL_BINDING_TYPE_TX;
+            node_data.binding_addr = node_address.address_start;
+            status = el_simple_binding_client_set(&m_binding_client, node_data);
+            
+            break;
+         case 8: /* Initiate node reset */
+            /* Clear all the states to reset the node. */
+            mesh_stack_config_clear();
+            node_reset();
             break;
         default:
             break;
@@ -296,6 +327,11 @@ static void models_init_cb(void)
     m_color_temperature_client.timeout_cb = client_publish_timeout_cb;
     ERROR_CHECK(el_simple_color_temperature_client_init(&m_color_temperature_client, 6));
     ERROR_CHECK(access_model_subscription_list_alloc(m_color_temperature_client.model_handle));
+
+    m_binding_client.status_cb = binding_client_status_cb;
+    m_binding_client.timeout_cb = client_publish_timeout_cb;
+    ERROR_CHECK(el_simple_binding_client_init(&m_binding_client, 0));
+    ERROR_CHECK(access_model_subscription_list_alloc(m_binding_client.model_handle));
 }
 
 static void mesh_init(void)

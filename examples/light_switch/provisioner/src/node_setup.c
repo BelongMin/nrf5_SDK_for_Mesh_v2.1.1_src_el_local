@@ -53,6 +53,7 @@
 #include "el_simple_brightness_server.h"
 #include "el_simple_color_temperature_client.h"
 #include "el_simple_color_temperature_server.h"
+#include "el_simple_binding_client.h"
 
 #include "health_common.h"
 
@@ -81,6 +82,7 @@ typedef enum
     NODE_SETUP_CONFIG_APPKEY_BIND_BRIGHTNESS_CLIENT,
     NODE_SETUP_CONFIG_APPKEY_BIND_COLOR_TEMPERATURE_SERVER,
     NODE_SETUP_CONFIG_APPKEY_BIND_COLOR_TEMPERATURE_CLIENT,
+    NODE_SETUP_CONFIG_APPKEY_BIND_BINDING_CLIENT,
     NODE_SETUP_CONFIG_PUBLICATION_HEALTH,
     NODE_SETUP_CONFIG_PUBLICATION_ONOFF_SERVER,
     NODE_SETUP_CONFIG_PUBLICATION_ONOFF_SERVER1_2,
@@ -90,6 +92,7 @@ typedef enum
     NODE_SETUP_CONFIG_PUBLICATION_ONOFF_CLIENT4,
     NODE_SETUP_CONFIG_PUBLICATION_BRIGHTNESS_CLIENT,
     NODE_SETUP_CONFIG_PUBLICATION_COLOR_TEMPERATURE_CLIENT,
+    NODE_SETUP_CONFIG_PUBLICATION_BINDING_CLIENT,
     NODE_SETUP_CONFIG_SUBSCRIPTION_ONOFF_SERVER,
     NODE_SETUP_CONFIG_SUBSCRIPTION_BRIGHTNESS_SERVER,
     NODE_SETUP_CONFIG_SUBSCRIPTION_COLOR_TEMPERATURE_SERVER,
@@ -145,6 +148,20 @@ static const config_steps_t client_config_steps[] =
     NODE_SETUP_CONFIG_APPKEY_BIND_ONOFF_CLIENT,
     NODE_SETUP_CONFIG_APPKEY_BIND_BRIGHTNESS_CLIENT,
     NODE_SETUP_CONFIG_APPKEY_BIND_COLOR_TEMPERATURE_CLIENT,
+    NODE_SETUP_CONFIG_APPKEY_BIND_BINDING_CLIENT,
+    NODE_SETUP_CONFIG_PUBLICATION_ONOFF_CLIENT1,
+    NODE_SETUP_CONFIG_PUBLICATION_ONOFF_CLIENT2,
+    NODE_SETUP_CONFIG_PUBLICATION_ONOFF_CLIENT3,
+    NODE_SETUP_CONFIG_PUBLICATION_ONOFF_CLIENT4,
+    NODE_SETUP_CONFIG_PUBLICATION_BRIGHTNESS_CLIENT,
+    NODE_SETUP_CONFIG_PUBLICATION_COLOR_TEMPERATURE_CLIENT,
+    NODE_SETUP_CONFIG_PUBLICATION_BINDING_CLIENT,
+    NODE_SETUP_DONE
+};
+
+/* Sequence of steps for the client nodes */
+static const config_steps_t binding_config_steps[] =
+{
     NODE_SETUP_CONFIG_PUBLICATION_ONOFF_CLIENT1,
     NODE_SETUP_CONFIG_PUBLICATION_ONOFF_CLIENT2,
     NODE_SETUP_CONFIG_PUBLICATION_ONOFF_CLIENT3,
@@ -176,7 +193,9 @@ static const config_steps_t server_config_steps[] =
     NODE_SETUP_CONFIG_APPKEY_BIND_ONOFF_SERVER,
     NODE_SETUP_CONFIG_APPKEY_BIND_BRIGHTNESS_SERVER,
     NODE_SETUP_CONFIG_APPKEY_BIND_COLOR_TEMPERATURE_SERVER,
+    NODE_SETUP_CONFIG_APPKEY_BIND_BINDING_CLIENT,
     NODE_SETUP_CONFIG_PUBLICATION_HEALTH,
+    NODE_SETUP_CONFIG_PUBLICATION_BINDING_CLIENT,
     NODE_SETUP_CONFIG_SUBSCRIPTION_ONOFF_SERVER,
     NODE_SETUP_CONFIG_SUBSCRIPTION_BRIGHTNESS_SERVER,
     NODE_SETUP_CONFIG_SUBSCRIPTION_COLOR_TEMPERATURE_SERVER,
@@ -198,6 +217,7 @@ static node_setup_successful_cb_t m_node_setup_success_cb;
 static node_setup_failed_cb_t m_node_setup_failed_cb;
 static expected_status_list_t m_expected_status_list;
 static bool m_status_checked;
+static bool m_is_binding_mode;
 
 /* Forward declaration */
 static void config_step_execute(void);
@@ -381,7 +401,24 @@ static void color_temperature_client_pub_state_set(config_publication_state_t *p
             p_pubstate->element_address, p_pubstate->publish_address.value);
 }
 
-
+static void binding_client_pub_state_set(config_publication_state_t *p_pubstate, uint16_t element_addr,
+                                     uint16_t publish_addr)
+{
+    p_pubstate->element_address = element_addr;
+    p_pubstate->publish_address.type = nrf_mesh_address_type_get(publish_addr);
+    p_pubstate->publish_address.value = publish_addr;
+    p_pubstate->appkey_index = m_appkey_idx;
+    p_pubstate->frendship_credential_flag = false;
+    p_pubstate->publish_ttl = (SERVER_NODE_COUNT > NRF_MESH_TTL_MAX ? NRF_MESH_TTL_MAX : SERVER_NODE_COUNT);
+    p_pubstate->publish_period.step_num = 0;
+    p_pubstate->publish_period.step_res = ACCESS_PUBLISH_RESOLUTION_100MS;
+    p_pubstate->retransmit_count = 1;
+    p_pubstate->retransmit_interval = 0;
+    p_pubstate->model_id.company_id = ACCESS_COMPANY_ID_NORDIC;
+    p_pubstate->model_id.model_id = EL_SIMPLE_BINDING_MODEL_CLIENT_ID;
+    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Set: Binding client: 0x%04x  pub addr: 0x%04x\n",
+            p_pubstate->element_address, p_pubstate->publish_address.value);
+}
 /*************************************************************************************************/
 /* Node setup functionality related static functions */
 /* USER_NOTE:
@@ -575,6 +612,23 @@ static void config_step_execute(void)
             break;
         }
 
+        
+        /* Bind the Binding client to the application key: */
+        case NODE_SETUP_CONFIG_APPKEY_BIND_BINDING_CLIENT:
+        {
+            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "App key bind: Simple Binding client on element 0x%04x\n", model_element_addr);
+            access_model_id_t model_id;
+            model_id.company_id = ACCESS_COMPANY_ID_NORDIC;
+            model_id.model_id = EL_SIMPLE_BINDING_MODEL_CLIENT_ID;
+            uint16_t element_address = m_current_node_addr;
+            status = config_client_model_app_bind(element_address, m_appkey_idx, model_id);
+            retry_on_fail(status);
+
+            static const uint8_t exp_status[] = {ACCESS_STATUS_SUCCESS};
+            expected_status_set(CONFIG_OPCODE_MODEL_APP_STATUS, sizeof(exp_status), exp_status);
+            break;
+        }
+
         /* Configure the publication parameters for the Health server: */
         case NODE_SETUP_CONFIG_PUBLICATION_HEALTH:
         {
@@ -746,6 +800,7 @@ static void config_step_execute(void)
 
         case NODE_SETUP_CONFIG_PUBLICATION_BRIGHTNESS_CLIENT:
         {
+            if(m_is_binding_mode) m_config_current_group++;
             config_publication_state_t pubstate = {0};
             brightness_client_pub_state_set(&pubstate,
                                  m_current_node_addr + ELEMENT_IDX_ONOFF_CLIENT4 + 1,
@@ -759,6 +814,7 @@ static void config_step_execute(void)
 
         case NODE_SETUP_CONFIG_PUBLICATION_COLOR_TEMPERATURE_CLIENT:
         {
+            if(m_is_binding_mode) m_config_current_group++;
             config_publication_state_t pubstate = {0};
             color_temperature_client_pub_state_set(&pubstate,
                                  m_current_node_addr + ELEMENT_IDX_ONOFF_CLIENT4 + 2,
@@ -769,7 +825,20 @@ static void config_step_execute(void)
             expected_status_set(CONFIG_OPCODE_MODEL_PUBLICATION_STATUS, sizeof(exp_status), exp_status);
             break;
         }
+        
+        case NODE_SETUP_CONFIG_PUBLICATION_BINDING_CLIENT:
+        {
+            config_publication_state_t pubstate = {0};
+            binding_client_pub_state_set(&pubstate,
+                                 m_current_node_addr,
+                                 PROVISIONER_ADDRESS);
+            retry_on_fail(config_client_model_publication_set(&pubstate));
 
+            static const uint8_t exp_status[] = {ACCESS_STATUS_SUCCESS};
+            expected_status_set(CONFIG_OPCODE_MODEL_PUBLICATION_STATUS, sizeof(exp_status), exp_status);
+            model_element_addr = 0;
+            break;
+        }
         default:
             ERROR_CHECK(NRF_ERROR_NOT_FOUND);
             break;
@@ -848,6 +917,8 @@ void node_setup_config_client_event_process(config_client_event_type_t event_typ
             if (*mp_config_step == NODE_SETUP_DONE)
             {
                 mp_config_step = &m_idle_step;
+                
+                if(m_is_binding_mode) m_is_binding_mode = false;
                 m_node_setup_success_cb();
             }
             else
@@ -899,6 +970,35 @@ void node_setup_start(uint16_t address, uint8_t  retry_cnt, const uint8_t * p_ap
         __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "SERVER_NODE_UUID_PREFIX\n");
         mp_config_step = server_config_steps;
     }
+    config_step_execute();
+}
+
+/**
+ * Begins the node setup process.
+ */
+void node_binding_start(uint16_t address, uint16_t rx_address, uint8_t  retry_cnt, const uint8_t * p_appkey,
+                      uint16_t appkey_idx)
+{
+    if (*mp_config_step != NODE_SETUP_IDLE)
+    {
+        __LOG(LOG_SRC_APP, LOG_LEVEL_ERROR, "Cannot start. Node setup procedure is in progress.\n");
+        return;
+    }
+    m_config_current_group = rx_address;
+
+    m_current_node_addr = address;
+    m_retry_count = retry_cnt;
+    m_send_timer.timer.cb = client_send_timer_cb;
+    m_send_timer.count = CLIENT_BUSY_SEND_RETRY_LIMIT;
+    mp_appkey = p_appkey;
+    m_appkey_idx = appkey_idx;
+
+    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Binding Node: 0x%04X\n", m_current_node_addr);
+
+    setup_config_client(m_current_node_addr);
+
+    mp_config_step = binding_config_steps;
+    m_is_binding_mode = true;
     config_step_execute();
 }
 

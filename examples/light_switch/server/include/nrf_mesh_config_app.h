@@ -83,7 +83,7 @@
  * plus the number of models needed by the application.
  */
 //#define ACCESS_MODEL_COUNT (3)
-#define ACCESS_MODEL_COUNT (5)
+#define ACCESS_MODEL_COUNT (5 + 1)
 
 /**
  * The number of elements in the application.
@@ -101,7 +101,7 @@
  * models operating on shared states.
  */
 //#define ACCESS_SUBSCRIPTION_LIST_COUNT (1)
-#define ACCESS_SUBSCRIPTION_LIST_COUNT (3)
+#define ACCESS_SUBSCRIPTION_LIST_COUNT (3 + 1)
 
 /**
  * The number of pages of flash storage reserved for the access layer for persistent data storage.

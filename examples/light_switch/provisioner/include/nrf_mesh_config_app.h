@@ -87,7 +87,8 @@
 #define ACCESS_MODEL_COUNT (1 + /* Configuration client */  \
                             1 + /* Configuration server */  \
                             1 + /* Health server */ \
-                            1   /* Health client */)
+                            1 + /* Health client */ \
+                            1 /* Binding server */)
 
 /**
  * The number of elements in the application.

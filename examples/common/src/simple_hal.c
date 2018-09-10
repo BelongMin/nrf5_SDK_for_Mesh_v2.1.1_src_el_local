@@ -214,12 +214,12 @@ void hal_leds_init(void)
         NRF_GPIO->OUTSET = 1UL << i;
     }
 
-#ifdef BOARD_PTR5618
-    NRF_GPIO->PIN_CNF[LED_L1] = LED_PIN_CONFIG;
-    NRF_GPIO->PIN_CNF[LED_L2] = LED_PIN_CONFIG;
-    NRF_GPIO->OUTCLR = 1UL << LED_L1;
-    NRF_GPIO->OUTCLR = 1UL << LED_L2;
-#endif
+//#ifdef BOARD_PTR5618
+//    NRF_GPIO->PIN_CNF[LED_L1] = LED_PIN_CONFIG;
+//    NRF_GPIO->PIN_CNF[LED_L2] = LED_PIN_CONFIG;
+//    NRF_GPIO->OUTCLR = 1UL << LED_L1;
+//    NRF_GPIO->OUTCLR = 1UL << LED_L2;
+//#endif
 
     APP_ERROR_CHECK(app_timer_create(&m_blink_timer, APP_TIMER_MODE_REPEATED, led_timeout_handler));
 }
@@ -265,8 +265,9 @@ void hal_pwm_init(void)
         {
             LED_WARM | NRF_DRV_PWM_PIN_INVERTED, // channel 0
             LED_COLD | NRF_DRV_PWM_PIN_INVERTED, // channel 1
-            NRF_DRV_PWM_PIN_NOT_USED, // channel 2
-            NRF_DRV_PWM_PIN_NOT_USED  // channel 3
+            11 | NRF_DRV_PWM_PIN_INVERTED, // channel 3
+            12 | NRF_DRV_PWM_PIN_INVERTED, // channel 4
+//            NRF_DRV_PWM_PIN_NOT_USED  // channel 3
         },
         .irq_priority = APP_IRQ_PRIORITY_LOWEST,
         .base_clock   = NRF_PWM_CLK_16MHz,

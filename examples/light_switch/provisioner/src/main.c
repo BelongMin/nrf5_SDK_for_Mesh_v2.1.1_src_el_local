@@ -65,6 +65,7 @@
 #include "config_server.h"
 #include "health_client.h"
 #include "simple_on_off_client.h"
+#include "el_simple_binding_server.h"
 
 /* Logging and RTT */
 #include "rtt_input.h"
@@ -105,6 +106,8 @@ static void app_mesh_core_event_cb (const nrf_mesh_evt_t * p_evt);
 static void app_start(void);
 
 static nrf_mesh_evt_handler_t m_mesh_core_event_handler = { .evt_cb = app_mesh_core_event_cb };
+
+static el_simple_binding_server_t m_binding_server;
 
 /*****************************************************************************/
 /**** Flash handling ****/
@@ -297,9 +300,35 @@ static void app_prov_failed_cb(void)
     hal_led_pin_set(APP_PROVISIONING_LED, 0);
 }
 
-
 /*****************************************************************************/
 /**** Model related callbacks ****/
+static el_simple_binding_data_t el_binding_get_cb(const el_simple_binding_server_t * p_server)
+{
+    el_simple_binding_data_t ret = {0x01, 0x0001};
+    return ret;
+}
+
+static el_simple_binding_data_t app_binding_event_cb(const el_simple_binding_server_t * p_server, el_simple_binding_data_t binding_data)
+{
+    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "app_binding_event_cb, type: %d\taddr: 0x%04x\n", binding_data.binding_type, binding_data.binding_addr);
+
+    static el_simple_binding_data_t binding_dev_info[2] = {0};
+    if(binding_data.binding_type == EL_BINDING_TYPE_TX)
+    {
+        binding_dev_info[0] = binding_data;
+    }
+    else if(binding_data.binding_type == EL_BINDING_TYPE_RX)
+    {
+        binding_dev_info[1] = binding_data;
+    }
+    if((binding_dev_info[0].binding_type != EL_BINDING_TYPE_NONE) && (binding_dev_info[1].binding_type != EL_BINDING_TYPE_NONE))
+    {
+        node_binding_start(binding_dev_info[0].binding_addr, binding_dev_info[1].binding_addr, PROVISIONER_RETRY_COUNT,
+                            m_nw_state.appkey, APPKEY_INDEX);
+        memset(binding_dev_info, 0, sizeof(el_simple_binding_data_t) * 2);
+    }
+}
+
 static void app_health_event_cb(const health_client_t * p_client, const health_client_evt_t * p_event)
 {
     switch (p_event->type)
@@ -441,6 +470,10 @@ void app_default_models_bind_setup(void)
 
     /* Bind self-config server to the self device key */
     ERROR_CHECK(config_server_bind(m_dev_handles.m_self_devkey_handle));
+
+    /* Bind binding server to APP key */
+    ERROR_CHECK(access_model_application_bind(m_binding_server.model_handle, m_dev_handles.m_appkey_handle));
+    ERROR_CHECK(access_model_publish_application_set(m_binding_server.model_handle, m_dev_handles.m_appkey_handle));
 }
 
 
@@ -518,6 +551,11 @@ void models_init_cb(void)
      * health client : To be able to interact with other health servers */
     ERROR_CHECK(config_client_init(app_config_client_event_cb));
     ERROR_CHECK(health_client_init(&m_dev_handles.m_health_client_instance, 0, app_health_event_cb));
+
+    m_binding_server.get_cb = el_binding_get_cb;
+    m_binding_server.set_cb = app_binding_event_cb;
+    ERROR_CHECK(el_simple_binding_server_init(&m_binding_server, 0));
+    ERROR_CHECK(access_model_subscription_list_alloc(m_binding_server.model_handle));
 }
 
 static void mesh_init(void)

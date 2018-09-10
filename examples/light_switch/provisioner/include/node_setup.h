@@ -115,6 +115,9 @@ void node_setup_config_client_event_process(config_client_event_type_t event_typ
                                             uint16_t length);
 
 
+void node_binding_start(uint16_t address, uint16_t rx_address, uint8_t  retry_cnt, const uint8_t * p_appkey,
+                      uint16_t appkey_idx);
+
 /** @} end of NODE_SETUP */
 
 #endif /* NODE_SETUP_H__ */

@@ -94,7 +94,8 @@
                             2 + /* Simple OnOff client (2 groups) */ \
                             2 + /* Simple OnOff client (2 unicast) */ \
                             1 + /* Simple Brightness client (group) */ \
-                            1   /* Simple Color Temperature client (group) */)
+                            1 + /* Simple Color Temperature client (group) */ \
+                            1   /* Simple Binding client */)
 
 /**
  * The number of elements in the application.
@@ -102,7 +103,7 @@
  * @warning If the application is to support multiple _instances_ of the _same_ model, they cannot
  * belong in the same element and a separate element is needed for the new instance.
  */
-#define ACCESS_ELEMENT_COUNT (1 + CLIENT_MODEL_INSTANCE_COUNT + 1 + 1) /* One element per Simple OnOff client instance */
+#define ACCESS_ELEMENT_COUNT (1 + CLIENT_MODEL_INSTANCE_COUNT + 1 + 1 + 1) /* One element per Simple OnOff client instance */
 
 /**
  * The number of allocated subscription lists for the application.

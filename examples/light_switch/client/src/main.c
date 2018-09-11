@@ -68,7 +68,8 @@
 #define LED_BLINK_CNT_PROV          (4)
 #define LED_BLINK_CNT_NO_REPLY      (6)
 
-static simple_on_off_client_t m_clients[CLIENT_MODEL_INSTANCE_COUNT];
+//static simple_on_off_client_t m_clients[CLIENT_MODEL_INSTANCE_COUNT];
+static simple_on_off_client_t m_on_off_client;
 static el_simple_brightness_client_t m_brightness_client;
 static el_simple_color_temperature_client_t m_color_temperature_client;
 static el_simple_binding_client_t m_binding_client;
@@ -89,12 +90,12 @@ static void provisioning_complete_cb(void)
     hal_led_blink_ms(LEDS_MASK, LED_BLINK_INTERVAL_MS, LED_BLINK_CNT_PROV);
 }
 
-static uint32_t server_index_get(const simple_on_off_client_t * p_client)
-{
-    uint32_t index = p_client - &m_clients[0];
-    NRF_MESH_ASSERT(index < SERVER_NODE_COUNT);
-    return index;
-}
+//static uint32_t server_index_get(const simple_on_off_client_t * p_client)
+//{
+//    uint32_t index = p_client - &m_clients[0];
+//    NRF_MESH_ASSERT(index < SERVER_NODE_COUNT);
+//    return index;
+//}
 
 static void client_publish_timeout_cb(access_model_handle_t handle, void * p_self)
 {
@@ -103,27 +104,27 @@ static void client_publish_timeout_cb(access_model_handle_t handle, void * p_sel
 
 static void client_status_cb(const simple_on_off_client_t * p_self, simple_on_off_status_t status, uint16_t src)
 {
-    uint32_t server_index = server_index_get(p_self);
+//    uint32_t server_index = server_index_get(p_self);
 
     switch (status)
     {
         case SIMPLE_ON_OFF_STATUS_ON:
-            hal_led_pin_set(BSP_LED_0 + server_index, true);
-            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "OnOff server %u status ON\n", server_index);
+//            hal_led_pin_set(BSP_LED_0 + server_index, true);
+            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "OnOff server status ON\n");
             break;
 
         case SIMPLE_ON_OFF_STATUS_OFF:
-            hal_led_pin_set(BSP_LED_0 + server_index, false);
-            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "OnOff server %u status OFF\n", server_index);
+//            hal_led_pin_set(BSP_LED_0 + server_index, false);
+            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "OnOff server status OFF\n");
             break;
 
         case SIMPLE_ON_OFF_STATUS_ERROR_NO_REPLY:
             hal_led_blink_ms(LEDS_MASK, LED_BLINK_SHORT_INTERVAL_MS, LED_BLINK_CNT_NO_REPLY);
-            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "No reply from OnOff server %u\n", server_index);
+            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "No reply from OnOff server\n");
             break;
 
         case SIMPLE_ON_OFF_STATUS_CANCELLED:
-            __LOG(LOG_SRC_APP, LOG_LEVEL_WARN, "Message to server %u cancelled\n", server_index);
+            __LOG(LOG_SRC_APP, LOG_LEVEL_WARN, "Message to server cancelled\n");
             break;
         default:
             __LOG(LOG_SRC_APP, LOG_LEVEL_ERROR, "Unknown status \n");
@@ -216,53 +217,47 @@ static void button_event_handler(uint32_t button_number)
     dsm_local_unicast_address_t node_address;
     switch (button_number)
     {
-        case 0:
-        case 1:
-        case 2:// Change On/Off
-            /* send a group message to the ODD group, with inverted GPIO pin value */
-            
+        case 0:// On Off
             m_current_on_off = !m_current_on_off;  
-            status = simple_on_off_client_set_unreliable(&m_clients[button_number], m_current_on_off, GROUP_MSG_REPEAT_COUNT);
-            
-//            dsm_local_unicast_addresses_get(&node_address);
-//            node_data.binding_type = EL_BINDING_TYPE_TX;
-//            node_data.binding_addr = node_address.address_start;
-//            status = el_simple_binding_client_set(&m_binding_client, node_data);
-
+            status = simple_on_off_client_set_unreliable(&m_on_off_client, m_current_on_off, GROUP_MSG_REPEAT_COUNT);
             break;
-        case 3:
-            mesh_stack_config_clear();
-            node_reset();
-            break;
-        case 4:// Brightness Add
-            m_current_brightness += 10;
-            if(m_current_brightness > LED_DUTY_MAX) m_current_brightness = LED_DUTY_MAX;
-            status = el_simple_brightness_client_set_unreliable(&m_brightness_client, m_current_brightness, GROUP_MSG_REPEAT_COUNT);
-            break;
-        case 5:// Brightness Reduce
-            m_current_brightness -= 10;
-            if(m_current_brightness < (LED_DUTY_MIN + 10)) m_current_brightness = (LED_DUTY_MIN + 10);
-            status = el_simple_brightness_client_set_unreliable(&m_brightness_client, m_current_brightness, GROUP_MSG_REPEAT_COUNT);
-            break;
-        case 6:// Color Temperature Add
-            m_current_color_temperature += 10;
-            if(m_current_color_temperature > LED_DUTY_MAX) m_current_color_temperature = LED_DUTY_MAX;
-            status = el_simple_color_temperature_client_set_unreliable(&m_color_temperature_client, m_current_color_temperature, GROUP_MSG_REPEAT_COUNT);
-            break;
-        case 7:// Color Temperature Reduce
-//            if(m_current_color_temperature >= (LED_DUTY_MIN + 10)) m_current_color_temperature -= 10;
-//            status = el_simple_color_temperature_client_set_unreliable(&m_color_temperature_client, m_current_color_temperature, GROUP_MSG_REPEAT_COUNT);
-           
+        case 1: /* Send Binding Info */
+        {
             dsm_local_unicast_addresses_get(&node_address);
             node_data.binding_type = EL_BINDING_TYPE_TX;
             node_data.binding_addr = node_address.address_start;
             status = el_simple_binding_client_set(&m_binding_client, node_data);
-            
             break;
-         case 8: /* Initiate node reset */
+        }
+
+        case 2: /* Initiate node reset */
+        {
             /* Clear all the states to reset the node. */
             mesh_stack_config_clear();
             node_reset();
+            break;
+        }
+        case 3:// Brightness Add
+            m_current_brightness += 10;
+            if(m_current_brightness > LED_DUTY_MAX) m_current_brightness = LED_DUTY_MAX;
+            status = el_simple_brightness_client_set_unreliable(&m_brightness_client, m_current_brightness, GROUP_MSG_REPEAT_COUNT);
+            break;
+        case 4:// Brightness Reduce
+            m_current_brightness -= 10;
+            if(m_current_brightness < (LED_DUTY_MIN + 10)) m_current_brightness = (LED_DUTY_MIN + 10);
+            status = el_simple_brightness_client_set_unreliable(&m_brightness_client, m_current_brightness, GROUP_MSG_REPEAT_COUNT);
+            break;
+        case 5:// Color Temperature Add
+            m_current_color_temperature += 10;
+            if(m_current_color_temperature > LED_DUTY_MAX) m_current_color_temperature = LED_DUTY_MAX;
+            status = el_simple_color_temperature_client_set_unreliable(&m_color_temperature_client, m_current_color_temperature, GROUP_MSG_REPEAT_COUNT);
+            break;
+        case 6:// Color Temperature Reduce
+            if(m_current_color_temperature >= (LED_DUTY_MIN + 10)) m_current_color_temperature -= 10;
+            status = el_simple_color_temperature_client_set_unreliable(&m_color_temperature_client, m_current_color_temperature, GROUP_MSG_REPEAT_COUNT);
+            break;
+        case 7: // Reserve
+            
             break;
         default:
             break;
@@ -310,22 +305,22 @@ static void models_init_cb(void)
 {
     __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Initializing and adding models\n");
 
-    for (uint32_t i = 0; i < CLIENT_MODEL_INSTANCE_COUNT; ++i)
-    {
-        m_clients[i].status_cb = client_status_cb;
-        m_clients[i].timeout_cb = client_publish_timeout_cb;
-        ERROR_CHECK(simple_on_off_client_init(&m_clients[i], i + 1));
-        ERROR_CHECK(access_model_subscription_list_alloc(m_clients[i].model_handle));
-    }
+//    for (uint32_t i = 0; i < CLIENT_MODEL_INSTANCE_COUNT; ++i)
+//    {
+        m_on_off_client.status_cb = client_status_cb;
+        m_on_off_client.timeout_cb = client_publish_timeout_cb;
+        ERROR_CHECK(simple_on_off_client_init(&m_on_off_client, 1));
+        ERROR_CHECK(access_model_subscription_list_alloc(m_on_off_client.model_handle));
+//    }
 
     m_brightness_client.status_cb = brightness_client_status_cb;
     m_brightness_client.timeout_cb = client_publish_timeout_cb;
-    ERROR_CHECK(el_simple_brightness_client_init(&m_brightness_client, 5));
+    ERROR_CHECK(el_simple_brightness_client_init(&m_brightness_client, 2));
     ERROR_CHECK(access_model_subscription_list_alloc(m_brightness_client.model_handle));
 
     m_color_temperature_client.status_cb = color_temperature_client_status_cb;
     m_color_temperature_client.timeout_cb = client_publish_timeout_cb;
-    ERROR_CHECK(el_simple_color_temperature_client_init(&m_color_temperature_client, 6));
+    ERROR_CHECK(el_simple_color_temperature_client_init(&m_color_temperature_client, 3));
     ERROR_CHECK(access_model_subscription_list_alloc(m_color_temperature_client.model_handle));
 
     m_binding_client.status_cb = binding_client_status_cb;

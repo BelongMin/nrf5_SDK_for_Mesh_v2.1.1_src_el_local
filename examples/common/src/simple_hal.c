@@ -265,8 +265,8 @@ void hal_pwm_init(void)
         {
             LED_WARM | NRF_DRV_PWM_PIN_INVERTED, // channel 0
             LED_COLD | NRF_DRV_PWM_PIN_INVERTED, // channel 1
-            11 | NRF_DRV_PWM_PIN_INVERTED, // channel 3
-            12 | NRF_DRV_PWM_PIN_INVERTED, // channel 4
+            NRF_DRV_PWM_PIN_NOT_USED, // channel 3
+            NRF_DRV_PWM_PIN_NOT_USED // channel 4
 //            NRF_DRV_PWM_PIN_NOT_USED  // channel 3
         },
         .irq_priority = APP_IRQ_PRIORITY_LOWEST,

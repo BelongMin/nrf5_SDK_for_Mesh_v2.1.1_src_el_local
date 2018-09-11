@@ -60,8 +60,8 @@
 /** Set LED Mask state to On. */
 #define LED_MASK_STATE_ON     (true)
 
-#define LED_WARM       17
-#define LED_COLD       18
+#define LED_WARM       11
+#define LED_COLD       12
 
 #define LED_DUTY_MIN 0
 #define LED_DUTY_MAX 100

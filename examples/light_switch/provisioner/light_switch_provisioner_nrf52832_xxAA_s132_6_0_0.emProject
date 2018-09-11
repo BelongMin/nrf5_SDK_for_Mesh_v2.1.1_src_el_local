@@ -164,9 +164,6 @@
       <file file_name="../../../models/simple_color_temperature/src/el_simplecolor_temperature_client.c" />
     </folder>
     <folder Name="Simple Binding">
-      <file file_name="../../../models/simple_binding/src/el_simple_binding_client.c">
-        <configuration Name="Debug" build_exclude_from_build="Yes" />
-      </file>
       <file file_name="../../../models/simple_binding/src/el_simple_binding_server.c" />
     </folder>
   </project>

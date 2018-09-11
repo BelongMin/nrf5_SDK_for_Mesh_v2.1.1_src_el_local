@@ -84,8 +84,6 @@ static void led_event_handler(uint8_t on_off, uint8_t brightness, uint8_t color_
     {
         hal_pwm_duty_set(LED_COLOR_WARM_CHANNEL, LED_DUTY_MIN);
         hal_pwm_duty_set(LED_COLOR_COLD_CHANNEL, LED_DUTY_MIN);
-        hal_pwm_duty_set(2, LED_DUTY_MIN);
-        hal_pwm_duty_set(3, LED_DUTY_MIN);
     }
     else
     {
@@ -93,8 +91,6 @@ static void led_event_handler(uint8_t on_off, uint8_t brightness, uint8_t color_
         uint8_t cold_duty = (uint8_t)((float)(100 - color_temperature) * (float)brightness/100.0f);
         hal_pwm_duty_set(LED_COLOR_WARM_CHANNEL, warm_duty);
         hal_pwm_duty_set(LED_COLOR_COLD_CHANNEL, cold_duty);
-        hal_pwm_duty_set(2, warm_duty);
-        hal_pwm_duty_set(3, cold_duty);
     }
 //    m_current_on_off = on_off;
 //    m_current_brightness = brightness;
@@ -202,6 +198,22 @@ static void button_event_handler(uint32_t button_number)
     __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Button %u pressed\n", button_number);
     switch (button_number)
     {
+        case 1: /* Send Binding Info */
+        {
+            dsm_local_unicast_addresses_get(&node_address);
+            node_data.binding_type = EL_BINDING_TYPE_RX;
+            node_data.binding_addr = node_address.address_start;
+            (void)el_simple_binding_client_set(&m_binding_client, node_data);
+            break;
+        }
+
+        case 2: /* Initiate node reset */
+        {
+            /* Clear all the states to reset the node. */
+            mesh_stack_config_clear();
+            node_reset();
+            break;
+        }
         /* Pressing SW4 on the Development Kit will result in LED state to toggle and trigger
         the STATUS message to inform client about the state change. This is a demonstration of
         state change publication due to local event. */
@@ -211,23 +223,6 @@ static void button_event_handler(uint32_t button_number)
             __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "User action \n");
             hal_led_pin_set(LED_PIN_NUMBER, value);
             (void)simple_on_off_server_status_publish(&m_server, value);
-            break;
-        }
-
-        case 7: /* Initiate node reset */
-        {
-            dsm_local_unicast_addresses_get(&node_address);
-            node_data.binding_type = EL_BINDING_TYPE_RX;
-            node_data.binding_addr = node_address.address_start;
-            (void)el_simple_binding_client_set(&m_binding_client, node_data);
-            break;
-        }
-
-        case 8: /* Initiate node reset */
-        {
-            /* Clear all the states to reset the node. */
-            mesh_stack_config_clear();
-            node_reset();
             break;
         }
         default:
